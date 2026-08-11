@@ -804,6 +804,14 @@ svg.leaflet-image-layer.leaflet-interactive path {
             }
 
             * { box-sizing: border-box; }
+            /* overflow: hidden va messo ANCHE su html, non solo su body.
+               Con il solo body il contenitore che scorre diventa html e la
+               pagina si trascina lo stesso: su iPhone il documento risultava
+               largo 481 px contro uno schermo da 375, e scorrendo di lato si
+               trovava il vuoto lasciato dai pannelli a scomparsa (.pd-*, .sd-*)
+               parcheggiati fuori schermo a destra. Misurato l'11/08/2026 sul
+               portale Q8 pubblicato. */
+            html { overflow: hidden; }
             body { margin: 0; font-family: 'Inter', -apple-system, 'Segoe UI', Roboto, sans-serif; background: var(--surface-low); color: var(--on-surface); overflow: hidden; user-select: none; font-size: 14px; }
 
             ::-webkit-scrollbar { width: 5px; }
@@ -2704,7 +2712,7 @@ body.theme-dark .leaflet-control-attribution { background: rgba(15,20,32,.82) !i
                 </div>
                 <div class="kpi kpi-live">
                     <span class="kpi-label" data-i18n="kpi_sync">Dati Fuel Finder sincronizzati</span>
-                    <span class="kpi-value" style="font-size:12px;"><span class="live-dot"></span>11/08/2026 14:43 UTC</span>
+                    <span class="kpi-value" style="font-size:12px;"><span class="live-dot"></span>11/08/2026 15:15 UTC</span>
                 </div>
                 <button class="btn-pref-top" onclick="apriPreferiti()" title="I miei impianti preferiti" aria-label="Apri la lista dei preferiti">★ <span class="badge" id="prefBadge"></span></button>
                 <select id="langSel" class="lang-select" onchange="setLang(this.value)" aria-label="Lingua / Language">
@@ -4969,6 +4977,29 @@ body.theme-dark .leaflet-control-attribution { background: rgba(15,20,32,.82) !i
                 }
             }
 
+
+            // ── L'interruttore della concorrenza compare solo se ci sono dati ──
+            //
+            // Nella versione cliente i concorrenti NON entrano nel file: il
+            // blocco wex-comp resta {"fuels":[],"stations":[]}. L'interruttore
+            // pero' restava in pagina, e chi lo accendeva otteneva il nulla —
+            // su un portale pubblico sembra una funzione rotta, non una scelta.
+            // Qui si guarda se ci sono davvero impianti rivali e, se non ce ne
+            // sono, la riga sparisce. Nell'app il file arriva via fetch, quindi
+            // li' l'interruttore resta.
+            (function () {
+                if (document.body.classList.contains('app-mode')) return;
+                var tag = document.getElementById('wex-comp');
+                var quanti = 0;
+                try {
+                    var j = JSON.parse((tag ? tag.textContent : '') || '{}');
+                    quanti = (j.stations || []).length;
+                } catch (e) { quanti = 0; }
+                if (quanti === 0) {
+                    var riga = document.querySelector('.opt-row-comp');
+                    if (riga) riga.style.display = 'none';
+                }
+            })();
             // ---- PREZZI LIVE Fuel Finder (in-app): l'app scarica il listino nazionale
             // direttamente dal Ministero e la pagina ricalcola tutto qui. ----
             const PREMIUM_KW_JS = ['SPECIAL', 'PLUS', 'HI-Q', 'HI Q', 'V-POWER', 'BLUE', 'SUPREME', 'PERFORM', 'ENERGY', 'ORO', 'EXCEL'];
@@ -9653,8 +9684,22 @@ body.theme-dark .leaflet-control-attribution { background: rgba(15,20,32,.82) !i
             apriComponi = function () { apriConsole('composizione'); };
             chiudiComponi = function () { chiudiConsole(); };
 
+            // ── L'amministrazione non esiste sulla versione cliente ──
+            //
+            // Dall'11/08/2026 le versioni cliente stanno su GitHub Pages, cioe'
+            // su pagine aperte a chiunque. Un pannello "Amministrazione" in
+            // testata, anche solo dichiarativo, invita a frugare e fa sembrare
+            // il portale un ambiente interno lasciato aperto per sbaglio.
+            // Si toglie il bottone E la scorciatoia #console=1, altrimenti la
+            // si raggiunge lo stesso scrivendola nell'indirizzo.
+            var SOLO_INTERNA = (window.WEX_VERSIONE_PORTALE || 'interna') !== 'cliente';
+
             var b = document.getElementById('btnComponi');
-            if (b) b.onclick = function () { apriConsole('composizione'); };
+            if (b && !SOLO_INTERNA) {
+                b.style.display = 'none';
+            } else if (b) {
+                b.onclick = function () { apriConsole('composizione'); };
+            }
 
             // etichetta del bottone: e' l'amministrazione, non piu' solo il comporre
             var _compApplica = compApplica;
@@ -9685,8 +9730,10 @@ body.theme-dark .leaflet-control-attribution { background: rgba(15,20,32,.82) !i
                 consDisegnaLog();
             };
 
-            // per il collaudo: #console=1 apre la console all'avvio
-            if (/console=1/.test(location.hash)) apriConsole('composizione');
+            // per il collaudo: #console=1 apre la console all'avvio.
+            // Sulla versione cliente no: sarebbe la porta di servizio lasciata
+            // aperta dopo aver chiuso quella principale.
+            if (SOLO_INTERNA && /console=1/.test(location.hash)) apriConsole('composizione');
         })();
         /* ═════════ 26 · I18N ESTESA — la lingua cambia DAVVERO ovunque ═════════
            Se l'utente sceglie l'inglese e la guida resta in italiano, il
