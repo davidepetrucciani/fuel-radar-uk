@@ -2712,7 +2712,7 @@ body.theme-dark .leaflet-control-attribution { background: rgba(15,20,32,.82) !i
                 </div>
                 <div class="kpi kpi-live">
                     <span class="kpi-label" data-i18n="kpi_sync">Dati Fuel Finder sincronizzati</span>
-                    <span class="kpi-value" style="font-size:12px;"><span class="live-dot"></span>11/08/2026 17:32 UTC</span>
+                    <span class="kpi-value" style="font-size:12px;"><span class="live-dot"></span>11/08/2026 19:14 UTC</span>
                 </div>
                 <button class="btn-pref-top" onclick="apriPreferiti()" title="I miei impianti preferiti" aria-label="Apri la lista dei preferiti">★ <span class="badge" id="prefBadge"></span></button>
                 <select id="langSel" class="lang-select" onchange="setLang(this.value)" aria-label="Lingua / Language">
@@ -8501,9 +8501,28 @@ body.theme-dark .leaflet-control-attribution { background: rgba(15,20,32,.82) !i
                 }
             });
 
+            // Il modale di condivisione va appeso al BODY, non alla sidebar.
+            //
+            // IL GUASTO
+            //   #shareModal nasce dentro #sidebar. Quando la sidebar e' chiusa
+            //   ha transform: translateX(-460px), e un antenato con transform
+            //   diventa il contenitore di riferimento per i figli in
+            //   position: fixed — che quindi non si posizionano piu' rispetto
+            //   alla finestra. Il modale finiva a left: -445px: aperto,
+            //   visibile secondo il DOM, e completamente fuori dallo schermo.
+            //   Con la sidebar aperta funzionava, ed e' per questo che non si
+            //   vedeva provandolo qui. Segnalato da Davide l'11/08/2026.
+            //
+            //   Si sposta una volta sola, alla prima apertura: cosi' non
+            //   dipende dall'ordine di caricamento dei moduli e resta valido
+            //   anche se qualcuno rimette mano al markup.
             function apriOpzioniCondivisione() {
                 if (filteredData.length === 0) return notifica(t('vuoto_attuali'));
-                document.getElementById('shareModal').style.display = 'flex';
+                var modale = document.getElementById('shareModal');
+                if (modale && modale.parentElement !== document.body) {
+                    document.body.appendChild(modale);
+                }
+                modale.style.display = 'flex';
             }
             
             function chiudiOpzioniCondivisione() {
