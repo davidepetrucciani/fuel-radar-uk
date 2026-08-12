@@ -2753,6 +2753,54 @@ body.theme-dark .leaflet-control-attribution { background: rgba(15,20,32,.82) !i
                 body.scheda-aperta .map-ctrl { opacity: 0; pointer-events: none;
                     transition: opacity .15s ease; }
             }
+
+            /* ═══════ CHIUSURA DELLA SCHEDA SULLA MAPPA ═══════
+               Quello di serie di Leaflet e' 18x14 px, grigio #c3c3c3, in
+               Tahoma: sotto la meta' del bersaglio minimo per un dito, e
+               stonato rispetto al resto. Diventa un tondo bianco con l'ombra,
+               appoggiato all'angolo della scheda: si vede, si prende, e non
+               copre il titolo. Solo aspetto — il comportamento e' quello di
+               Leaflet, nessuna logica toccata. */
+            .leaflet-container a.leaflet-popup-close-button {
+                width: 30px; height: 30px; top: -6px; right: -6px; padding: 0;
+                font: 400 19px/30px -apple-system, 'Segoe UI', Roboto, sans-serif;
+                color: var(--on-surface-variant, #444651);
+                background: var(--surface-lowest, #fff);
+                border: 1px solid var(--border-subtle, #E2E8F0);
+                border-radius: 50%;
+                box-shadow: 0 2px 10px rgba(0, 26, 72, 0.16);
+                text-align: center; text-decoration: none;
+                transition: background .15s ease, color .15s ease, transform .15s ease;
+                z-index: 10;
+            }
+            .leaflet-container a.leaflet-popup-close-button:hover {
+                background: var(--surface-container, #eeedf4);
+                color: var(--on-surface, #1a1b20);
+                transform: scale(1.06);
+            }
+            .leaflet-container a.leaflet-popup-close-button:active { transform: scale(0.94); }
+            /* Il tondo sta sull'angolo e sporge un poco fuori dalla scheda:
+               al contenuto basta un margine piccolo. Con 26px il titolo
+               andava a capo senza motivo. */
+            .leaflet-popup-content { padding-right: 12px; }
+
+            body.theme-dark .leaflet-container a.leaflet-popup-close-button {
+                background: #1d2436; border-color: #2c3550; color: #b9c2d4 !important;
+                box-shadow: 0 2px 10px rgba(0, 0, 0, 0.45);
+            }
+            body.theme-dark .leaflet-container a.leaflet-popup-close-button:hover {
+                background: #27304a; color: #e9ecf5 !important;
+            }
+
+            /* Sul telefono il bersaglio arriva a 38 px: e' la misura che si
+               prende col pollice senza guardare. */
+            @media (max-width: 480px) {
+                .leaflet-container a.leaflet-popup-close-button {
+                    width: 38px; height: 38px; top: -8px; right: -8px;
+                    font-size: 23px; line-height: 38px;
+                }
+                .leaflet-popup-content { padding-right: 14px; }
+            }
         </style>
 
         <!-- ═══ Statistiche di visita ═══════════════════════════════════════
@@ -2989,7 +3037,7 @@ body.theme-dark .leaflet-control-attribution { background: rgba(15,20,32,.82) !i
                 </div>
                 <div class="kpi kpi-live">
                     <span class="kpi-label" data-i18n="kpi_sync">Dati Fuel Finder sincronizzati</span>
-                    <span class="kpi-value" style="font-size:12px;"><span class="live-dot"></span>12/08/2026 10:58 UTC</span>
+                    <span class="kpi-value" style="font-size:12px;"><span class="live-dot"></span>12/08/2026 12:30 UTC</span>
                 </div>
                 <button class="btn-pref-top" onclick="apriPreferiti()" title="I miei impianti preferiti" aria-label="Apri la lista dei preferiti">★ <span class="badge" id="prefBadge"></span></button>
                 <select id="langSel" class="lang-select" onchange="setLang(this.value)" aria-label="Lingua / Language">
@@ -10966,9 +11014,18 @@ body.theme-dark .leaflet-control-attribution { background: rgba(15,20,32,.82) !i
             }).filter(function (x) { return !x.vuoto; });
         }
 
+        /* ANALISI "CONVIENE ALLARGARE?" — SOSPESA (12/08/2026).
+           La tabella metteva a confronto sette raggi con risparmio netto e
+           minuti di deviazione. Il calcolo e' corretto, ma chiedeva troppo a
+           chi guarda una mappa: sette righe di numeri per rispondere a una
+           domanda che nessuno si era posto. "Non si capisce" — Davide.
+           Il codice resta intero: per riaccenderla basta rimettere true. */
+        var ANALISI_RAGGIO_ATTIVA = false;
+
         function raggioDisegna(dentro, oltre) {
             var box = document.getElementById('lrAnalisi');
             if (!box) return;
+            if (!ANALISI_RAGGIO_ATTIVA) { box.innerHTML = ''; box.style.display = 'none'; return; }
             var righe = raggioCalcola(dentro, oltre);
             if (!righe || righe.length < 2) { box.innerHTML = ''; box.style.display = 'none'; return; }
 
@@ -13571,9 +13628,18 @@ body.theme-dark .leaflet-control-attribution { background: rgba(15,20,32,.82) !i
             pool.forEach(function (d) {
                 var f = d.fuels[d.fuel_rif || fuel];
                 if (!f || d.route_km == null) return;
-                // la carta migliore IN QUESTO impianto, fra quelle che il
-                // cliente ha in mano se lo ha dichiarato
+                // La carta migliore IN QUESTO impianto, fra quelle NOSTRE e
+                // fra quelle che il cliente ha in mano se lo ha dichiarato.
+                //
+                // SOLO LE NOSTRE. Nei portali di singola rete il campo pay
+                // porta i codici grezzi del ministero — 28 sigle nel Q8, fra
+                // cui UTA, IDS, AMEX, TAM ed EWG, che sono i circuiti di altri
+                // operatori. Senza questo filtro il piano diceva "usa EWG",
+                // consigliando la carta di un concorrente. Segnalato da Davide
+                // il 12/08/2026. Nostra = quella per cui il portale ha una
+                // regola, cioe' un nome e delle condizioni.
                 var carte = (d.pay || []).filter(function (c) {
+                    if (typeof regolaCarta === 'function' && !regolaCarta(c)) return false;
                     return !carteScelte.size || carteScelte.has(c);
                 });
                 if (!carte.length) return;
