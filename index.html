@@ -2922,7 +2922,7 @@ body.theme-dark .leaflet-control-attribution { background: rgba(15,20,32,.82) !i
                 </div>
                 <div class="kpi kpi-live">
                     <span class="kpi-label" data-i18n="kpi_sync">Dati Fuel Finder sincronizzati</span>
-                    <span class="kpi-value" style="font-size:12px;"><span class="live-dot"></span>12/08/2026 06:22 UTC</span>
+                    <span class="kpi-value" style="font-size:12px;"><span class="live-dot"></span>12/08/2026 07:05 UTC</span>
                 </div>
                 <button class="btn-pref-top" onclick="apriPreferiti()" title="I miei impianti preferiti" aria-label="Apri la lista dei preferiti">★ <span class="badge" id="prefBadge"></span></button>
                 <select id="langSel" class="lang-select" onchange="setLang(this.value)" aria-label="Lingua / Language">
@@ -5099,9 +5099,19 @@ body.theme-dark .leaflet-control-attribution { background: rgba(15,20,32,.82) !i
                 // (12/08/2026). Il rinvio lascia finire l'avvio: analizzaPercorso
                 // geocodifica, disegna la rotta e fa il render.
                 if ((p.get('start') || '').trim()) {
-                    setTimeout(function () {
+                    // Non un ritardo fisso: si ASPETTA che la mappa esista
+                    // davvero. Con 600 ms secchi, su una pagina da 32 MB la
+                    // ricerca partiva a riquadro ancora chiuso (0x0) e
+                    // l'inquadratura finiva allo zoom 20 sul nulla.
+                    (function quandoPronta(tentativo) {
+                        var pronta = window.map && map.getSize && map.getSize().x > 40 &&
+                                     !document.getElementById('avvioVelo');
+                        if (!pronta && tentativo < 40) {
+                            return setTimeout(function () { quandoPronta(tentativo + 1); }, 250);
+                        }
+                        try { map.invalidateSize(); } catch (e) {}
                         try { analizzaPercorso(); } catch (e) {}
-                    }, 600);
+                    })(0);
                 }
                 return true;
             }
@@ -7816,6 +7826,41 @@ body.theme-dark .leaflet-control-attribution { background: rgba(15,20,32,.82) !i
             const map = L.map('map', {zoomControl: false,
                                       wheelPxPerZoomLevel: 120}).setView(CENTRO, ZOOM0);
             L.control.zoom({ position: 'bottomright' }).addTo(map);
+
+            /* ═══ LA MAPPA SI ACCORGE DI CAMBIARE DIMENSIONE ═══
+               Leaflet memorizza la misura del riquadro e non la ricontrolla da
+               solo. Se la mappa nasce in una scheda in secondo piano, o in un
+               pannello che si apre dopo, resta convinta di essere grande come
+               allora: si disegna in un quadratino in mezzo al grigio, e una
+               rotta inquadrata in quel momento finisce fuori vista.
+               Qui la si tiene allineata al contenitore vero, e la prima volta
+               che acquista una dimensione degna si reinquadra il percorso se
+               non era ancora riuscito. Trovato aprendo il link dell'autista in
+               una scheda non attiva (12/08/2026). */
+            (function sorvegliaDimensioni() {
+                var nodo = document.getElementById('map');
+                if (!nodo) return;
+                var risistema = function () {
+                    map.invalidateSize();
+                    if (map.getSize().x < 40) return;
+                    // rotta calcolata ma mai inquadrata come si deve
+                    if (window.currentPath && window.currentPath.length > 1
+                            && !window.__rottaInquadrata) {
+                        try {
+                            map.fitBounds(L.polyline(window.currentPath).getBounds(),
+                                          { padding: [50, 50] });
+                            window.__rottaInquadrata = true;
+                        } catch (e) {}
+                    }
+                };
+                if (window.ResizeObserver) new ResizeObserver(risistema).observe(nodo);
+                window.addEventListener('resize', risistema);
+                // il ritorno su una scheda lasciata in secondo piano non emette
+                // un evento di ridimensionamento: lo si intercetta a parte
+                document.addEventListener('visibilitychange', function () {
+                    if (!document.hidden) setTimeout(risistema, 60);
+                });
+            })();
             let tmMove;
             map.on('moveend zoomend', () => {
                 clearTimeout(tmMove);
@@ -8284,7 +8329,30 @@ body.theme-dark .leaflet-control-attribution { background: rgba(15,20,32,.82) !i
                             notifica(t('rt_fine_lontana').replace('{km}', (scartoM / 1000).toFixed(1)));
                         }
                         L.polyline(window.currentPath, {color: '#3b82f6', weight: 6, opacity: 0.8}).addTo(routeLayer);
-                        map.fitBounds(L.polyline(window.currentPath).getBounds(), {padding: [50, 50]});
+                        // INQUADRATURA A PROVA DI CONTENITORE VUOTO.
+                        //   Se #map misura 0x0 quando si chiama fitBounds -
+                        //   succede quando la ricerca parte da sola da un link
+                        //   condiviso, prima che il riquadro sia disposto -
+                        //   Leaflet deve far stare 552 km in zero pixel e
+                        //   sceglie lo zoom 20: la mappa resta inchiodata su
+                        //   due metri di mare, con la rotta calcolata e
+                        //   invisibile. E' quello che vedeva l'autista aprendo
+                        //   il link (12/08/2026). Si aspetta che il riquadro
+                        //   abbia una dimensione vera, e solo allora si inquadra.
+                        window.__rottaInquadrata = false;
+                        (function inquadra(tentativo) {
+                            map.invalidateSize();
+                            if (map.getSize().x < 40 || map.getSize().y < 40) {
+                                // niente inquadratura su un riquadro inesistente:
+                                // meglio restare sulla vista d'Italia. Quando il
+                                // riquadro comparira', ci pensa la sorveglianza
+                                // delle dimensioni (modulo 18) a inquadrare.
+                                if (tentativo < 20) return setTimeout(function () { inquadra(tentativo + 1); }, 200);
+                                return;
+                            }
+                            map.fitBounds(L.polyline(window.currentPath).getBounds(), {padding: [50, 50]});
+                            window.__rottaInquadrata = true;
+                        })(0);
                         // Lungo un percorso "il piu' economico" e' l'ordine sbagliato:
                         // premia un prezzo basso a 15 km dalla rotta piu' di uno buono
                         // sulla rotta. Con un itinerario attivo si passa al risparmio
@@ -10059,7 +10127,14 @@ body.theme-dark .leaflet-control-attribution { background: rgba(15,20,32,.82) !i
         });
 
         function vistaAttuale() {
-            try { return localStorage.getItem('wexVista') || 'locator'; } catch (e) { return 'locator'; }
+            try {
+                var v = localStorage.getItem('wexVista') || 'locator';
+                // chi era rimasto nell'essenziale (salvata nel browser durante
+                // le prove) verrebbe riaperto in una vista che non esiste piu':
+                // lo si riporta alla mappa normale
+                if (v === 'essenziale') { localStorage.setItem('wexVista', 'locator'); return 'locator'; }
+                return v;
+            } catch (e) { return 'locator'; }
         }
         function vistaSalva(v) {
             try { localStorage.setItem('wexVista', v); } catch (e) {}
@@ -10710,11 +10785,18 @@ body.theme-dark .leaflet-control-attribution { background: rgba(15,20,32,.82) !i
                 // Il pulsante della vista essenziale: primo della fila, perche'
                 // e' quello che serve a chi ha fretta. Resta visibile anche
                 // DENTRO l'essenziale - e' l'unica via d'uscita.
-                var be = document.createElement('button');
-                be.className = 'btn-guide'; be.id = 'btnEssenziale';
-                be.onclick = vistaEssenziale;
-                be.textContent = t('loc_essenziale');
-                componi.parentNode.insertBefore(be, bc);
+                // VISTA ESSENZIALE SOSPESA (12/08/2026, richiesta di Davide).
+                // Il codice resta - vista, stili, traduzioni - ma il pulsante
+                // non viene creato, quindi la vista non e' raggiungibile.
+                // Per riattivarla basta rimettere ESSENZIALE_ATTIVA a true.
+                var ESSENZIALE_ATTIVA = false;
+                if (ESSENZIALE_ATTIVA) {
+                    var be = document.createElement('button');
+                    be.className = 'btn-guide'; be.id = 'btnEssenziale';
+                    be.onclick = vistaEssenziale;
+                    be.textContent = t('loc_essenziale');
+                    componi.parentNode.insertBefore(be, bc);
+                }
             }
             // DOPO la creazione dei pulsanti, mai prima: la prima stesura
             // sincronizzava un pulsante che ancora non esisteva, e l'etichetta
