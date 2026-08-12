@@ -2686,6 +2686,73 @@ body.theme-dark .leaflet-control-attribution { background: rgba(15,20,32,.82) !i
                Tono piu' tenue: e' un'avvertenza, non un risultato. */
             .srv-fascia .srvf-i { font-weight: 500; font-style: italic; opacity: 0.9;
                 flex-basis: 100%; font-size: 10.5px; }
+
+            /* ═══════════ TELEFONO: LA SCHEDA DEVE ESSERE USABILE ═══════════
+               Misurato sul portale online il 12/08/2026, schermo 375x812:
+                 · la barra in alto chiedeva 553 px in un contenitore da 375,
+                   e marchio, mediana e badge finivano uno sopra l'altro;
+                 · nella scheda di un impianto i pulsanti NAVIGA e STREET VIEW
+                   cadevano a y=854, cioe' 42 px sotto il bordo dello schermo:
+                   fisicamente irraggiungibili. Da qui "i link non funzionano".
+               Segnalato da Davide. */
+            @media (max-width: 480px) {
+                /* 1. la barra smette di sfondare: via cio' che non serve a chi
+                      guarda una mappa dal telefono. La mediana resta nella
+                      scheda e nella lista, non e' un dato che si perde. */
+                #topbar { gap: 6px; overflow: hidden; }
+                #topbar .kpi-strip { display: none; }
+                #topbar .btn-guide { padding: 6px 8px; font-size: 10.5px; }
+                .brand-lockup { min-width: 0; flex: 0 1 auto; overflow: hidden; }
+                .carta-badge { flex: 0 0 auto; }
+
+                /* 2. la scheda non esce mai dai bordi */
+                .leaflet-popup-content-wrapper { max-width: calc(100vw - 24px); }
+                .leaflet-popup-content { margin: 12px; max-width: 100%; }
+
+                /* 3. e soprattutto: i pulsanti d'azione restano SEMPRE
+                      visibili, incollati in fondo alla scheda, mentre il resto
+                      del contenuto scorre sotto di loro. Nessuno deve piu'
+                      scorrere dentro un popup per trovare "Naviga". */
+                .leaflet-popup-content .pop-azioni {
+                    /* bottom:0 e NIENTE margine negativo in basso: con
+                       bottom:-12px la barra usciva di 12px dal contenitore che
+                       ritaglia, e la zona sensibile dei pulsanti finiva fuori
+                       dal ritaglio — si vedevano ma il dito colpiva il div. */
+                    position: sticky; bottom: 0; z-index: 5;
+                    background: var(--surface-lowest, #fff);
+                    margin: 8px -12px 0; padding: 10px 12px;
+                    border-top: 1px solid var(--border-subtle, #E2E8F0);
+                    box-shadow: 0 -8px 16px rgba(255,255,255,0.9);
+                }
+                /* i due pulsanti si prendono il proprio piano: cosi' nessuno
+                   sfondo, ombra o pseudo-elemento del contenitore puo' finire
+                   sopra di loro e intercettare il dito */
+                .leaflet-popup-content .pop-azioni > a {
+                    position: relative; z-index: 2; touch-action: manipulation;
+                }
+                body.theme-dark .leaflet-popup-content .pop-azioni {
+                    background: #151a2a; box-shadow: 0 -8px 16px rgba(21,26,42,0.9);
+                }
+            }
+
+            /* La dissolvenza dei popup di Leaflet puo' restare bloccata a
+               opacita' zero quando il browser sospende le transizioni (scheda
+               in secondo piano, telefono che risparmia energia): la scheda
+               risulta aperta ma invisibile, e sembra che il tocco non funzioni.
+               La dissolvenza non vale il rischio: si toglie. */
+            .leaflet-popup { transition: none !important; }
+            .leaflet-fade-anim .leaflet-popup { opacity: 1; }
+
+            /* Sul telefono i comandi della mappa (zoom, livelli, GPS) stavano
+               SOPRA la scheda e coprivano il pulsante STREET VIEW: il tocco
+               finiva sul "+" dello zoom. La scheda passa davanti: mentre e'
+               aperta i comandi non servono, e chiudendola tornano al loro posto. */
+            @media (max-width: 480px) {
+                .leaflet-popup-pane { z-index: 1200; }
+                body.scheda-aperta .leaflet-control-container,
+                body.scheda-aperta .map-ctrl { opacity: 0; pointer-events: none;
+                    transition: opacity .15s ease; }
+            }
         </style>
 
         <!-- ═══ Statistiche di visita ═══════════════════════════════════════
@@ -2922,7 +2989,7 @@ body.theme-dark .leaflet-control-attribution { background: rgba(15,20,32,.82) !i
                 </div>
                 <div class="kpi kpi-live">
                     <span class="kpi-label" data-i18n="kpi_sync">Dati Fuel Finder sincronizzati</span>
-                    <span class="kpi-value" style="font-size:12px;"><span class="live-dot"></span>12/08/2026 08:53 UTC</span>
+                    <span class="kpi-value" style="font-size:12px;"><span class="live-dot"></span>12/08/2026 10:58 UTC</span>
                 </div>
                 <button class="btn-pref-top" onclick="apriPreferiti()" title="I miei impianti preferiti" aria-label="Apri la lista dei preferiti">★ <span class="badge" id="prefBadge"></span></button>
                 <select id="langSel" class="lang-select" onchange="setLang(this.value)" aria-label="Lingua / Language">
@@ -6063,7 +6130,7 @@ body.theme-dark .leaflet-control-attribution { background: rgba(15,20,32,.82) !i
                         ${poiHtml(d)}
                         ${promoHtml(d)}
                         ${svBox(d)}
-                        <div style="margin-top: 14px; display: flex; gap: 8px;">
+                        <div class="pop-azioni" style="margin-top: 14px; display: flex; gap: 8px;">
                             <a href="${navLink}" target="_blank" class="btn btn-nav" style="flex:1; padding:12px; font-size:13px;" onclick="evTrack('naviga')">${t('btn_naviga')}</a>
                             <a href="${streetLink}" target="_blank" class="btn btn-outline" style="flex:1; padding:12px; font-size:13px;">${t('btn_street')}</a>
                         </div>
@@ -7827,6 +7894,11 @@ body.theme-dark .leaflet-control-attribution { background: rgba(15,20,32,.82) !i
                                       wheelPxPerZoomLevel: 120}).setView(CENTRO, ZOOM0);
             L.control.zoom({ position: 'bottomright' }).addTo(map);
 
+            // Scheda impianto aperta: lo dichiara al documento, cosi' il CSS
+            // puo' togliere di mezzo i comandi della mappa sul telefono.
+            map.on('popupopen', function () { document.body.classList.add('scheda-aperta'); });
+            map.on('popupclose', function () { document.body.classList.remove('scheda-aperta'); });
+
             /* ═══ LA MAPPA SI ACCORGE DI CAMBIARE DIMENSIONE ═══
                Leaflet memorizza la misura del riquadro e non la ricontrolla da
                solo. Se la mappa nasce in una scheda in secondo piano, o in un
@@ -8986,10 +9058,18 @@ body.theme-dark .leaflet-control-attribution { background: rgba(15,20,32,.82) !i
                         // l'autopan insegue un popup infinito, il cluster si
                         // riorganizza e il popup si chiude da solo: dentro il
                         // tetto la scheda scorre, la mappa resta ferma.
+                        // keepInView: Leaflet sposta la mappa finche' la scheda
+                        // sta tutta dentro lo schermo. Senza, su un telefono
+                        // 375x812 i pulsanti NAVIGA e STREET VIEW finivano a
+                        // y=854 — fuori dal bordo, impossibili da toccare, e
+                        // sembrava che i link non funzionassero (12/08/2026).
+                        // La scheda si accorcia anche di piu': meglio scorrere
+                        // dentro che avere i comandi oltre il bordo.
                         if (!isAppList) mk.bindPopup(() => popupHtml(d), isMobileNow()
-                            ? { maxWidth: Math.min(320, window.innerWidth - 50), minWidth: Math.min(280, window.innerWidth - 70),
-                                maxHeight: Math.max(260, window.innerHeight - 320),
-                                autoPanPaddingTopLeft: L.point(14, 132), autoPanPaddingBottomRight: L.point(14, 200) }
+                            ? { maxWidth: Math.min(320, window.innerWidth - 24), minWidth: Math.min(260, window.innerWidth - 40),
+                                maxHeight: Math.max(240, window.innerHeight - 380),
+                                keepInView: true,
+                                autoPanPaddingTopLeft: L.point(12, 96), autoPanPaddingBottomRight: L.point(12, 150) }
                             : { maxWidth: 400, minWidth: 340,
                                 maxHeight: Math.max(320, window.innerHeight - 260),
                                 autoPanPaddingTopLeft: L.point(14, 80) });
