@@ -1225,8 +1225,14 @@ svg.leaflet-image-layer.leaflet-interactive path {
             .cond-carta-h { display: flex; align-items: center; justify-content: space-between;
                 font-size: 13px; font-weight: 900; color: var(--primary); margin-bottom: 8px; }
             .cond-riga { display: flex; gap: 8px; margin-bottom: 8px; }
-            .cond-riga > div { flex: 1; min-width: 0; }
+            /* Colonna con l'input ancorato al fondo: "Sconto gasolio (c€/L)"
+               va su due righe e "Commissione (%)" su una, e i campi seguivano
+               l'etichetta finendo ad altezze diverse. La commissione sembrava
+               fuori posto - segnalato da Davide il 12/08/2026. */
+            .cond-riga > div { flex: 1; min-width: 0; display: flex; flex-direction: column; }
             .cond-riga .sub-label { margin-bottom: 3px; }
+            /* il campo sta dentro .input-group: e' quello da spingere in fondo */
+            .cond-riga .input-group { margin-top: auto; }
             .cond-riga input { width: 100%; box-sizing: border-box; padding: 8px; font-weight: 700; }
             .cond-nota { font-size: 10.5px; color: var(--on-surface-variant); line-height: 1.45; }
             .cond-zone { display: grid; grid-template-columns: auto 1fr 1fr; gap: 6px 8px; align-items: center; }
@@ -2555,6 +2561,131 @@ body.theme-dark .leaflet-control-attribution { background: rgba(15,20,32,.82) !i
     color: var(--mut, #7a8699); background: var(--surface-lowest, #fff);
     padding: 0 5px; border-radius: 4px; line-height: 1.4;
 }
+
+            /* Pastiglia della carta MIGLIORE fra quelle del cliente: bordo chiaro
+               e puntino dorato. Serve a distinguere "qui puoi pagare solo con
+               questa" da "fra le tue conviene questa" — con la sola sigla si
+               leggevano identiche. */
+            .pin-b-best { box-shadow: 0 0 0 1.5px #E5C65E; position: relative; padding-right: 13px !important; }
+            .pin-b-best .pb-dot { position: absolute; right: 3px; top: 50%; transform: translateY(-50%);
+                                  width: 5px; height: 5px; border-radius: 50%; background: #E5C65E; }
+
+            /* Il piu' conveniente fra i preferiti: fascia verde e riquadro in
+               risalto. Gli altri portano quanto costano in piu' al litro. */
+            .pd-card.pd-best { border: 2px solid var(--success); box-shadow: 0 4px 16px rgba(15,157,88,.18); position: relative; }
+            .pd-best-fascia { background: var(--success); color: #fff; font: 800 10.5px 'Inter', sans-serif;
+                              letter-spacing: .6px; text-transform: uppercase; padding: 4px 10px;
+                              border-radius: 6px 6px 0 0; margin: -1px -1px 6px; }
+            .pd-diff { float: right; font: 700 11px var(--mono), monospace; color: var(--danger);
+                       background: var(--danger-soft); border-radius: 5px; padding: 1px 6px; margin: 2px 2px 0 0; }
+
+            .pd-carta { display: flex; flex-wrap: wrap; align-items: center; gap: 5px; margin: 6px 0 2px; }
+            .pd-carta-nota { font-size: 10px; color: var(--on-surface-variant); font-weight: 600; }
+
+            /* Raggio dentro il pannello percorso: una riga sola sotto i campi. */
+            .lr-raggio { display: flex; align-items: center; gap: 10px; padding: 8px 2px 2px; }
+            .lr-raggio label { font: 700 10.5px 'Inter', sans-serif; letter-spacing: .3px;
+                               text-transform: uppercase; color: var(--on-surface-variant); white-space: nowrap; }
+            .lr-raggio input[type=range] { flex: 1; min-width: 90px; accent-color: var(--wex-navy); }
+            .lr-raggio output { font: 800 12.5px var(--mono), monospace; color: var(--primary);
+                                min-width: 34px; text-align: right; }
+
+            /* Analisi del raggio: una riga per soglia, la migliore in evidenza. */
+            .lr-analisi { margin: 6px 2px 2px; border-top: 1px solid var(--border-subtle); padding-top: 7px; }
+            .lra-tit { font: 800 10px 'Inter', sans-serif; letter-spacing: .5px; text-transform: uppercase;
+                       color: var(--on-surface-variant); margin-bottom: 5px; }
+            .lra-riga { display: grid; grid-template-columns: 46px 1fr auto auto; gap: 8px; align-items: center;
+                        padding: 4px 6px; border-radius: 6px; cursor: pointer; font-size: 11.5px; }
+            .lra-riga:hover { background: var(--surface-low); }
+            .lra-km { font-weight: 800; color: var(--on-surface-variant); }
+            .lra-net { font: 800 12px var(--mono), monospace; color: var(--success); }
+            .lra-cost { font-size: 10.5px; color: var(--on-surface-variant); }
+            .lra-badge { font: 800 9px 'Inter', sans-serif; text-transform: uppercase; letter-spacing: .4px;
+                         background: var(--success); color: #fff; border-radius: 4px; padding: 1px 5px; }
+            .lra-riga.lra-qui { background: var(--surface-low); box-shadow: inset 2px 0 0 var(--wex-navy); }
+            .lra-riga.lra-top .lra-net { color: var(--success); }
+            .lra-nota { font-size: 9.5px; color: var(--on-surface-variant); margin-top: 5px; line-height: 1.35; }
+
+            /* Il verdetto sul raggio: una frase sola, colorata dalla risposta. */
+            .lra-verdetto { border-radius: 8px; padding: 8px 10px; margin-bottom: 7px; font-size: 11.5px; line-height: 1.4; }
+            .lra-verdetto b { display: block; font-size: 12.5px; margin-bottom: 2px; }
+            .lra-verdetto.lra-si    { background: var(--success-soft); border: 1px solid #bfe8cd; color: #145c33; }
+            .lra-verdetto.lra-forse { background: var(--warning-soft, #fff6e5); border: 1px solid #f0d9a8; color: #7a5300; }
+            .lra-verdetto.lra-no    { background: var(--surface-low); border: 1px solid var(--border-subtle); color: var(--on-surface-variant); }
+            .lra-ora   { margin-top: 4px; font-size: 10.5px; opacity: .9; }
+            .lra-mezzo { margin-top: 4px; font-size: 10px; opacity: .75; font-weight: 700; }
+
+            /* I numeri del mezzo, a un clic dal menu in barra. */
+            .loc-mezzo-wrap { display: inline-flex; align-items: center; gap: 2px; }
+            .loc-par { border: none; background: transparent; cursor: pointer; font-size: 13px;
+                       color: var(--on-surface-variant); padding: 2px 4px; border-radius: 5px; line-height: 1; }
+            .loc-par:hover { background: var(--surface-low); color: var(--primary); }
+            .loc-mezzo-pan { position: fixed; z-index: 2000; display: none; width: 236px;
+                             background: var(--surface-lowest); border: 1px solid var(--border-subtle);
+                             border-radius: 10px; box-shadow: 0 10px 30px rgba(0,26,72,.18); padding: 11px 12px; }
+            .loc-mezzo-pan.aperto { display: block; }
+            .lmp-tit { font: 800 12px 'Inter', sans-serif; color: var(--primary); margin-bottom: 8px; }
+            .lmp-riga { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 6px; }
+            .lmp-riga label { font-size: 10.5px; font-weight: 700; color: var(--on-surface-variant); }
+            .lmp-riga input { width: 78px; padding: 5px 7px; border: 1px solid var(--border-subtle);
+                              border-radius: 6px; font: 700 12px var(--mono), monospace; text-align: right;
+                              background: var(--surface-low); color: var(--on-surface); }
+            .lmp-nota { font-size: 9.5px; color: var(--on-surface-variant); line-height: 1.35; margin-top: 6px; }
+
+            /* Fascia servizi sopra i risultati: rende visibile un filtro che
+               prima lavorava muto. In rosso quando non resta niente, perche'
+               "zero risultati" senza spiegazione si legge come guasto. */
+            .srv-fascia { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px;
+                margin: 0 0 8px; padding: 8px 10px; border-radius: 9px;
+                background: var(--secondary-container); color: var(--on-secondary-container);
+                font-size: 11.5px; font-weight: 700; line-height: 1.35; }
+            .srv-fascia.vuota { background: #fdecec; color: #8a1c1c; }
+            body.theme-dark .srv-fascia.vuota { background: #3a1b1b; color: #ffd9d9; }
+            .srv-fascia .srvf-e { font-weight: 500; opacity: 0.85; }
+            .srv-fascia .srvf-a { display: flex; gap: 6px; margin-left: auto; flex-wrap: wrap; }
+            .srv-fascia .srvf-a button { border: 1px solid currentColor; background: transparent;
+                color: inherit; font: inherit; font-size: 10.5px; font-weight: 700;
+                padding: 3px 8px; border-radius: 7px; cursor: pointer; }
+            .srv-fascia .srvf-a button:hover { background: rgba(255,255,255,0.45); }
+            body.theme-dark .srv-fascia .srvf-a button:hover { background: rgba(255,255,255,0.12); }
+
+            /* Variante D: l'insegna e' un pallino dentro il pin (non allarga la
+               pastiglia, quindi i prezzi restano incolonnati) e la carta e' una
+               targhetta appesa sotto. Con la targhetta la freccia scende: se
+               restasse sul pin la targhetta gliela coprirebbe. */
+            .pin-ins { width: 14px; height: 14px; min-width: 14px; border-radius: 50%;
+                display: inline-flex; align-items: center; justify-content: center;
+                font-family: var(--sans, inherit); font-weight: 900; letter-spacing: -0.2px;
+                margin-right: 5px; flex: none; overflow: hidden; }
+            .pin-carta-sot { position: absolute; left: 50%; top: 100%; transform: translateX(-50%);
+                font-family: var(--sans, inherit); font-size: 9px; font-weight: 900; color: #fff;
+                padding: 1px 5px; border-radius: 0 0 6px 6px; white-space: nowrap; line-height: 1.35;
+                box-shadow: 0 2px 5px rgba(0,26,72,0.22); }
+            .pin-carta-sot::after { content: ''; position: absolute; bottom: -5px; left: 50%;
+                transform: translateX(-50%); border-width: 5px 5px 0; border-style: solid;
+                border-color: inherit transparent transparent transparent; }
+            .smart-pin.con-carta::after { display: none; }
+            .pin-carta-sot .pcs-dot { display: inline-block; width: 4px; height: 4px; border-radius: 50%;
+                background: #E5C65E; margin-left: 3px; vertical-align: 1px; }
+
+            /* Sezione raggiunta da una scorciatoia: dopo due schermate di
+               scorrimento serve sapere quale delle sezioni e' quella giusta. */
+            .section-card.sez-evidenzia { animation: sezLampo 1.6s ease-out 1; }
+            @keyframes sezLampo {
+                0%, 100% { box-shadow: 0 0 0 0 rgba(229,198,94,0); }
+                18%      { box-shadow: 0 0 0 3px rgba(229,198,94,0.9); }
+                70%      { box-shadow: 0 0 0 3px rgba(229,198,94,0.35); }
+            }
+
+            /* Scorciatoia condizioni nell'intestazione (vista completa): lo
+               stato "attive" si vede senza aprire la sezione. */
+            #hdrChipCond.on { background: #0F2A43; color: #fff; border-color: #0F2A43; }
+
+            /* Terzo numero della fascia servizi: gli impianti tenuti in mappa
+               perche' la fonte del loro Paese non censisce quel servizio.
+               Tono piu' tenue: e' un'avvertenza, non un risultato. */
+            .srv-fascia .srvf-i { font-weight: 500; font-style: italic; opacity: 0.9;
+                flex-basis: 100%; font-size: 10.5px; }
         </style>
 
         <!-- ═══ Statistiche di visita ═══════════════════════════════════════
@@ -2591,6 +2722,85 @@ body.theme-dark .leaflet-control-attribution { background: rgba(15,20,32,.82) !i
         </script>
     </head>
     <body oncontextmenu="return false;">
+
+        <!-- ═══ VELO D'AVVIO ═══
+             Il file incorpora i dati e pesa decine di MB: tra l'inizio del
+             parsing e l'ultimo modulo passano secondi in cui la pagina mostra
+             il layout grezzo, senza vista ne' stile applicati ("la vecchia
+             veste grafica per un momento" - Davide, 12/08/2026). Il velo e' il
+             PRIMO nodo del body: copre tutto da subito e cade a fine avvio.
+             Il failsafe lo toglie comunque: meglio la pagina nuda che nera. -->
+        <div id="avvioVelo" aria-hidden="true">
+            <div class="av-m"><span class="av-wex">WEX</span> FUEL <span class="av-radar">RADAR</span></div>
+        </div>
+        <style>
+            #avvioVelo { position: fixed; inset: 0; background: #10233d; z-index: 2147483000;
+                display: flex; align-items: center; justify-content: center;
+                transition: opacity 0.35s ease; }
+            #avvioVelo.via { opacity: 0; pointer-events: none; }
+            #avvioVelo .av-m { font: 800 28px/1 -apple-system, 'Segoe UI', sans-serif;
+                color: #e9eef7; letter-spacing: 2px; }
+            #avvioVelo .av-wex { color: #fff; background: #C8102E; padding: 2px 8px;
+                border-radius: 6px; margin-right: 6px; }
+            #avvioVelo .av-radar { color: #7fd188; }
+        </style>
+        <script>
+            // Sipario giu' a fine avvio (chiamato dal boot) o al failsafe.
+            function avvioVeloVia() {
+                var v = document.getElementById('avvioVelo');
+                if (!v || v.classList.contains('via')) return;
+                v.classList.add('via');
+                setTimeout(function () { if (v.parentNode) v.parentNode.removeChild(v); }, 450);
+            }
+            setTimeout(avvioVeloVia, 15000);
+
+            // ═══ MEMORIA VERSIONATA ═══
+            // Chrome da' UN'UNICA memoria a tutti i file .html aperti dal
+            // disco: ogni portale vecchio mai aperto ha scritto li', e il
+            // codice nuovo che rilegge quei formati inciampa in modi diversi
+            // a seconda della chiave marcia - "funzioni che mancano a seconda
+            // del browser". Qui si taglia la radice: se lo schema salvato non
+            // e' quello atteso, si riparte puliti. Sopravvivono solo lingua e
+            // tema, che non hanno formato. Vale anche per i portali online a
+            // ogni aggiornamento futuro.
+            (function () {
+                var SCHEMA = 'v2026-08-12a';
+                try {
+                    if (localStorage.getItem('wexSchema') === SCHEMA) return;
+                    var tieni = { wexLang: 1, wexTema: 1, wexTelemetriaUrl: 1 };
+                    var via = [];
+                    for (var i = 0; i < localStorage.length; i++) {
+                        var k = localStorage.key(i);
+                        if (k && /^wex/i.test(k) && !tieni[k]) via.push(k);
+                    }
+                    via.forEach(function (k) { localStorage.removeItem(k); });
+                    localStorage.setItem('wexSchema', SCHEMA);
+                } catch (e) { /* memoria bloccata: si va comunque */ }
+            })();
+
+            // ═══ SPIA D'ERRORE ═══
+            // Un'eccezione durante l'avvio spegneva funzioni IN SILENZIO e il
+            // difetto si scopriva solo "manca il pulsante X". La prima
+            // eccezione non gestita diventa una barra rossa con nome e riga:
+            // chi la vede puo' riferirla, invece di descrivere l'assenza.
+            window.addEventListener('error', function (ev) {
+                try {
+                    if (window.__spiaErr) return; window.__spiaErr = 1;
+                    var b = document.createElement('div');
+                    b.style.cssText = 'position:fixed;left:0;right:0;bottom:0;z-index:2147483001;' +
+                        'background:#8a1c1c;color:#fff;font:600 12px/1.5 -apple-system,sans-serif;' +
+                        'padding:8px 34px 8px 12px;word-break:break-all;';
+                    var f = String(ev.filename || '').split('/').pop();
+                    b.textContent = '⚠ ' + (ev.message || 'errore') + (f ? ' — ' + f + ':' + ev.lineno : '');
+                    var x = document.createElement('span');
+                    x.textContent = '✕';
+                    x.style.cssText = 'position:absolute;right:10px;top:7px;cursor:pointer;font-size:15px;';
+                    x.onclick = function () { b.remove(); };
+                    b.appendChild(x);
+                    (document.body || document.documentElement).appendChild(b);
+                } catch (e) {}
+            });
+        </script>
 
         <!-- Set icone vettoriali (stroke 2, griglia 24): niente emoji nel chrome dell'app -->
         <svg width="0" height="0" style="position:absolute" aria-hidden="true">
@@ -2712,7 +2922,7 @@ body.theme-dark .leaflet-control-attribution { background: rgba(15,20,32,.82) !i
                 </div>
                 <div class="kpi kpi-live">
                     <span class="kpi-label" data-i18n="kpi_sync">Dati Fuel Finder sincronizzati</span>
-                    <span class="kpi-value" style="font-size:12px;"><span class="live-dot"></span>11/08/2026 19:14 UTC</span>
+                    <span class="kpi-value" style="font-size:12px;"><span class="live-dot"></span>12/08/2026 02:30 UTC</span>
                 </div>
                 <button class="btn-pref-top" onclick="apriPreferiti()" title="I miei impianti preferiti" aria-label="Apri la lista dei preferiti">★ <span class="badge" id="prefBadge"></span></button>
                 <select id="langSel" class="lang-select" onchange="setLang(this.value)" aria-label="Lingua / Language">
@@ -2879,23 +3089,19 @@ body.theme-dark .leaflet-control-attribution { background: rgba(15,20,32,.82) !i
                          calcolava la rotta doveva andarselo a cercare. I campi del
                          mezzo (serbatoio, consumo) restano nella sezione 3: sono
                          del veicolo, non del viaggio. -->
-                    <label class="sub-label">Piano soste (serve un percorso attivo)</label>
+                    <label class="sub-label" data-i18n="ps_titolo">Piano soste (serve un percorso attivo)</label>
                     <div class="flex-row" style="margin-bottom: 10px;">
                         <div style="flex:1;">
-                            <label class="sub-label" for="plnFuel">Litri a bordo ora</label>
+                            <label class="sub-label" for="plnFuel" data-i18n="ps_bordo">Litri a bordo ora</label>
                             <div class="input-group"><input type="number" id="plnFuel" value="150" min="0" max="1500" style="padding: 8px;" aria-label="Litri attualmente nel serbatoio"></div>
                         </div>
                         <div style="flex:1;">
-                            <label class="sub-label" for="plnRes">Riserva min. (L)</label>
+                            <label class="sub-label" for="plnRes" data-i18n="ps_riserva">Riserva min. (L)</label>
                             <div class="input-group"><input type="number" id="plnRes" value="60" min="0" max="300" style="padding: 8px;" aria-label="Riserva minima di sicurezza in litri"></div>
                         </div>
                     </div>
-                    <button class="btn btn-primary" onclick="calcolaPianoSoste()" style="width:100%;">Calcola il piano di rifornimento</button>
-                    <div style="font-size:10px; color:var(--on-surface-variant); line-height:1.4; margin-top:8px;">
-                        Ogni risultato mostra il <b>risparmio netto in euro</b> (differenza dalla mediana sui litri,
-                        meno il carburante della deviazione). Il piano sceglie <b>dove fermarsi e quanto rifornire</b>
-                        lungo il percorso senza mai scendere sotto la riserva.
-                    </div>
+                    <button class="btn btn-primary" onclick="calcolaPianoSoste()" style="width:100%;" data-i18n="ps_calcola">Calcola il piano di rifornimento</button>
+                    <div data-i18n="ps_spiega" style="font-size:10px; color:var(--on-surface-variant); line-height:1.4; margin-top:8px;">Ogni risultato mostra il risparmio netto in euro (differenza dalla mediana sui litri, meno il carburante della deviazione). Il piano sceglie dove fermarsi e quanto rifornire lungo il percorso senza mai scendere sotto la riserva.</div>
 
 
                     <div class="tool-row">
@@ -3051,30 +3257,30 @@ body.theme-dark .leaflet-control-attribution { background: rgba(15,20,32,.82) !i
 
 
                     <div style="display:flex; align-items:center; justify-content:space-between; font-weight:800; font-size:12px; color:var(--secondary); cursor:pointer; margin-bottom: 10px;">
-                        Nascondi prezzi sospetti
+                        <span data-i18n="f_sospetti">Nascondi prezzi sospetti</span>
                         <label class="switch"><input type="checkbox" id="shield" checked onchange="render()" aria-label="Nascondi prezzi sospetti"><span class="slider"></span></label>
                     </div>
-                    <div style="font-size:10px; color:var(--text-muted); line-height:1.3; margin-bottom:15px;">Esclude i prezzi vecchi di oltre 7 giorni o palesemente errati; quelli solo dubbi restano visibili ma segnalati.</div>
+                    <div data-i18n="f_sospetti_nota" style="font-size:10px; color:var(--text-muted); line-height:1.3; margin-bottom:15px;">Esclude i prezzi vecchi di oltre 7 giorni o palesemente errati; quelli solo dubbi restano visibili ma segnalati.</div>
 
                     <div class="flex-row">
                         <div style="flex:1;">
-                            <label class="sub-label">Ordinamento</label>
+                            <label class="sub-label" data-i18n="f_ordinamento">Ordinamento</label>
                             <div class="input-group">
                                 <select id="sortType" onchange="render()">
-                                    <option value="price">Più economico</option>
-                                    <option value="dist">Più vicino</option>
-                                    <option value="net">Risparmio netto</option>
+                                    <option value="price" data-i18n="ord_prezzo">Più economico</option>
+                                    <option value="dist" data-i18n="ord_vicino">Più vicino</option>
+                                    <option value="net" data-i18n="ord_netto">Risparmio netto</option>
                                 </select>
                             </div>
                         </div>
                         <div style="flex:1;">
-                            <label class="sub-label">Prezzi Aggiornati</label>
+                            <label class="sub-label" data-i18n="f_freschezza">Prezzi Aggiornati</label>
                             <div class="input-group">
                                 <select id="dateFilter" onchange="render()">
-                                    <option value="today" style="color:var(--wex-cyan);font-weight:bold;">Oggi</option>
-                                    <option value="1">Ultime 24h</option>
-                                    <option value="2">Ultime 48h</option>
-                                    <option value="0" selected>Qualsiasi</option>
+                                    <option value="today" data-i18n="fr_oggi" style="color:var(--wex-cyan);font-weight:bold;">Oggi</option>
+                                    <option value="1" data-i18n="fr_24">Ultime 24h</option>
+                                    <option value="2" data-i18n="fr_48">Ultime 48h</option>
+                                    <option value="0" selected data-i18n="fr_tutti">Qualsiasi</option>
                                 </select>
                             </div>
                         </div>
@@ -3099,34 +3305,46 @@ body.theme-dark .leaflet-control-attribution { background: rgba(15,20,32,.82) !i
                 <div class="section-card" id="secServiziCarta" style="display:none">
                     <div class="section-title" style="cursor:default;">💳 <span data-i18n="sec_srvcarta">SERVIZI E ACQUISTI CON CARTA</span></div>
                     <div id="servCartaBody"></div>
-                    <button class="btn btn-outline" onclick="apriServizi()" style="width:100%; margin-top:6px;">Apri il pannello servizi</button>
+                    <button class="btn btn-outline" onclick="apriServizi()" style="width:100%; margin-top:6px;" data-i18n="f_pannello_srv">Apri il pannello servizi</button>
                 </div>
 
-                <div class="section-card collapsible collapsed" id="secViaggio">
+                <!-- Sezione VIAGGIO aperta di default (12/08/2026).
+     Conteneva gia' tutto — tipo di mezzo, litri, consumo, serbatoio,
+     riserva — ma nasceva chiusa, e chi apriva il portale non sapeva
+     nemmeno che esistesse: il piano soste girava sui valori di
+     fabbrica di un mezzo che non era il suo. -->
+                <div class="section-card collapsible" id="secViaggio">
                     <div class="section-title" onclick="toggleSection('secViaggio')"><span class="step-badge">3</span> <span data-i18n="sec3">VIAGGIO E RISPARMIO</span> <span class="chev">▾</span></div>
 
-                    <label class="sub-label" style="margin-top:2px;" data-mz-titolo>Il tuo mezzo</label>
+                    <label class="sub-label" style="margin-top:2px;" data-mz-titolo data-i18n="mz_tuo">Il tuo mezzo</label>
                     <div class="input-group" style="margin-bottom:8px;">
                         <select id="mezzoTipo" onchange="applicaMezzo(this.value)" style="padding:8px;" aria-label="Tipo di mezzo">
-                            <option value="auto">Auto</option>
-                            <option value="van">Van</option>
-                            <option value="furgone">Furgone</option>
-                            <option value="camion">Camion</option>
-                            <option value="truck">Autoarticolato</option>
-                            <option value="pers">Personalizzato</option>
+                            <option value="utilitaria" data-i18n="mzo_utilitaria">Utilitaria</option>
+                            <option value="berlina" data-i18n="mzo_berlina">Berlina</option>
+                            <option value="suv" data-i18n="mzo_suv">SUV / Station wagon</option>
+                            <option value="van" data-i18n="mzo_van">Van derivato</option>
+                            <option value="furgone" data-i18n="mzo_furgone">Furgone medio</option>
+                            <option value="furgonone" data-i18n="mzo_furgonone">Furgone grande</option>
+                            <option value="autocarro" data-i18n="mzo_autocarro">Autocarro leggero</option>
+                            <option value="camion" data-i18n="mzo_camion">Motrice</option>
+                            <option value="truck" data-i18n="mzo_truck">Autoarticolato</option>
+                            <option value="bus" data-i18n="mzo_bus">Autobus</option>
+                            <option value="pers" data-i18n="mzo_pers">Personalizzato</option>
                         </select>
                     </div>
                     <div class="flex-row" style="margin-bottom: 10px;">
                         <div style="flex:1;">
-                            <label class="sub-label" for="advLitri">Litri da rifornire</label>
+                            <label class="sub-label" for="advLitri" data-i18n="mz_litri">Litri da rifornire</label>
                             <div class="input-group"><input type="number" id="advLitri" value="300" min="1" max="1500" oninput="renderDebounced()" style="padding: 8px;" aria-label="Litri da rifornire"></div>
                         </div>
                         <div style="flex:1;">
-                            <label class="sub-label" for="advConsumo">Consumo (L/100km)</label>
+                            <label class="sub-label" for="advConsumo" data-i18n="mz_consumo">Consumo (L/100km)</label>
                             <div class="input-group"><input type="number" id="advConsumo" value="28" min="3" max="80" oninput="renderDebounced()" style="padding: 8px;" aria-label="Consumo del mezzo in litri per cento chilometri"></div>
+                            <label class="sub-label" for="mzKmL" style="margin-top:6px;" data-i18n="mz_kml">oppure km/L</label>
+                            <div class="input-group"><input type="number" id="mzKmL" step="0.1" min="0.5" max="60" style="padding: 8px;" aria-label="Chilometri per litro"></div>
                         </div>
                         <div style="flex:1;">
-                            <label class="sub-label" for="plnTank">Serbatoio (L)</label>
+                            <label class="sub-label" for="plnTank" data-i18n="mz_serbatoio">Serbatoio (L)</label>
                             <div class="input-group"><input type="number" id="plnTank" value="600" min="20" max="1500" style="padding: 8px;" aria-label="Capacità serbatoio in litri"></div>
                         </div>
                     </div>
@@ -3526,6 +3744,53 @@ body.theme-dark .leaflet-control-attribution { background: rgba(15,20,32,.82) !i
                 return `${l.nome.toLowerCase()}|${l.lat.toFixed(3)}|${l.lng.toFixed(3)}`;
             }
 
+            // Che cos'e' il risultato: citta', strada, fermata, attivita'.
+            // Le fonti lo dicono (class/type di Nominatim, osm_key/value di
+            // Photon) e noi lo buttavamo via: cosi' "Rimini" citta', via Rimini
+            // a Roma e un bar romano si presentavano IDENTICI nella tendina, e
+            // chi cliccava quello sbagliato si ritrovava il percorso che
+            // "a Rimini non ci arriva" - finiva a Roma. Segnalato da Davide.
+            function _catLuogo(cl, tp) {
+                tp = tp || '';
+                if (cl === 'place')
+                    return ['city','town','village','hamlet','municipality',
+                            'suburb','quarter','locality','island'].indexOf(tp) >= 0 ? 'luogo' : 'luogo';
+                if (cl === 'boundary') return 'area';
+                if (cl === 'highway') return tp === 'bus_stop' ? 'fermata' : 'via';
+                if (cl === 'railway') return /station|halt|stop/.test(tp) ? 'stazione' : 'poi';
+                if (cl === 'landuse' || cl === 'natural' || cl === 'waterway') return 'area';
+                return 'poi';
+            }
+
+            // Chi cerca un INDIRIZZO non cerca una citta'. "Via Roma 12
+            // Milano" e "Rimini" sono due domande diverse e vogliono due
+            // classifiche opposte: mettere sempre le citta' davanti (come
+            // faceva la prima stesura) rende impossibile cercare un civico.
+            // Si riconosce dalla forma della domanda: un numero civico, o una
+            // parola che introduce una strada.
+            const _RX_STRADA = /^\s*(via|viale|v\.le|corso|c\.so|piazza|p\.zza|piazzale|largo|strada|str\.|vicolo|lungomare|salita|circonvallazione|raccordo|autostrada|tangenziale|s\.?s\.?\s*\d|s\.?p\.?\s*\d|a\s*\d{1,2}\b)/i;
+            function _domandaIndirizzo(q) {
+                return _RX_STRADA.test(q) || /\d/.test(q);
+            }
+
+            // Ordine di merito. Cercando una citta' un capoluogo omonimo batte
+            // una via dall'altra parte del Paese; cercando un indirizzo vale
+            // l'opposto. L'importanza di Nominatim (0..1) fa da spareggio.
+            function _pesoLuogo(l, q) {
+                const eq = l.nome.toLowerCase() === q.trim().toLowerCase();
+                const indirizzo = _domandaIndirizzo(q);
+                const scala = indirizzo
+                    ? { via: 100, poi: 70, stazione: 60, luogo: 45, area: 30, fermata: 25 }
+                    : { luogo: 100, area: 60, via: 40, stazione: 35, fermata: 20, poi: 10 };
+                let s = scala[l.cat] || 10;
+                if (eq) s += 50;
+                // con un civico nella domanda, chi ha il civico vince: e' la
+                // differenza fra "via Roma" e "via Roma 12"
+                if (indirizzo && /\d/.test(q) && /\d/.test(l.nome)) s += 40;
+                s += (l.imp || 0) * 30;
+                return s;
+            }
+
             async function _daPhoton(q, bias) {
                 let url = `${SVC.photon}/api/?q=${encodeURIComponent(q)}&limit=10&bbox=${BBOX_EU}`;
                 // il bias tiene in cima i risultati vicini senza nascondere gli altri
@@ -3542,7 +3807,8 @@ body.theme-dark .leaflet-control-attribution { background: rgba(15,20,32,.82) !i
                         comune: p.city || p.county || '',
                         prov: [p.state, p.country && p.country !== PAESE ? p.country : '']
                               .filter(Boolean).join(' · '),
-                        lat: c[1], lng: c[0], fonte: 'photon'
+                        lat: c[1], lng: c[0], fonte: 'photon',
+                        cat: _catLuogo(p.osm_key, p.osm_value), imp: 0
                     };
                 }).filter(Boolean);
             }
@@ -3564,7 +3830,8 @@ body.theme-dark .leaflet-control-attribution { background: rgba(15,20,32,.82) !i
                         prov: [a.county || a.state,
                                a.country && a.country !== PAESE ? a.country : '']
                               .filter(Boolean).join(' · '),
-                        lat: parseFloat(o.lat), lng: parseFloat(o.lon), fonte: 'nominatim'
+                        lat: parseFloat(o.lat), lng: parseFloat(o.lon), fonte: 'nominatim',
+                        cat: _catLuogo(o.class, o.type), imp: o.importance || 0
                     };
                 }).filter(Boolean);
             }
@@ -3594,14 +3861,23 @@ body.theme-dark .leaflet-control-attribution { background: rgba(15,20,32,.82) !i
                     _daPhoton(q, bias).catch(() => []),
                     _daNominatim(q).catch(() => [])
                 ]);
-                // Nominatim per primo: sulle omonimie ordina meglio. Photon
-                // riempie il resto ed e' piu' ricco sui civici.
-                const uniti = [...no, ...ph];
+                // Prima i LUOGHI che si chiamano come la query, poi le vie, in
+                // fondo fermate e attivita': l'ordine di arrivo delle fonti
+                // premiava chi rispondeva, non chi aveva ragione.
+                const uniti = [...no, ...ph]
+                    .map((l, i) => [l, _pesoLuogo(l, q) - i * 0.01])   // -i: stabile a parita'
+                    .sort((a, b) => b[1] - a[1])
+                    .map(x => x[0]);
                 const visti = new Set(), out = [];
                 for (const l of uniti) {
                     const k = _chiaveLuogo(l);
-                    if (visti.has(k)) continue;
-                    visti.add(k);
+                    // stesso nome nello stesso comune = per chi cerca una meta
+                    // e' lo stesso posto: il doppione "Bari" a 18 km (comune e
+                    // territorio) confondeva senza aggiungere nulla. Vince chi
+                    // sta piu' in alto in classifica, cioe' la citta'.
+                    const kAmpia = `${l.nome.toLowerCase()}~${(l.comune || '').toLowerCase()}~${l.cat}`;
+                    if (visti.has(k) || visti.has(kAmpia)) continue;
+                    visti.add(k); visti.add(kAmpia);
                     out.push(l);
                     if (out.length >= maxRis) break;
                 }
@@ -3609,10 +3885,20 @@ body.theme-dark .leaflet-control-attribution { background: rgba(15,20,32,.82) !i
                 return out;
             }
 
-            /** Etichetta secondaria: comune e provincia, per distinguere le omonimie. */
+            /** Etichetta secondaria: comune e provincia, per distinguere le omonimie.
+                Se il risultato NON e' un luogo, l'etichetta lo dichiara: "via ·
+                Roma, Lazio" non si scambia per la citta' di Rimini. */
             function etichettaLuogo(l) {
                 const p = [l.comune, l.prov].filter(Boolean);
-                return p.length ? [...new Set(p)].join(', ') : PAESE;
+                let base = p.length ? [...new Set(p)].join(', ') : PAESE;
+                const TAG = { via: 'tag_via', fermata: 'tag_fermata',
+                              stazione: 'tag_stazione', poi: 'tag_poi', area: 'tag_area' };
+                if (l.cat && TAG[l.cat]) {
+                    let parola = l.cat;
+                    try { const s = t(TAG[l.cat]); if (s !== TAG[l.cat]) parola = s; } catch (e) {}
+                    base = parola + ' · ' + base;
+                }
+                return base;
             }
 
             // ---- Telemetria minima, privacy-first: solo contatori d'uso anonimi
@@ -4806,6 +5092,17 @@ body.theme-dark .leaflet-control-attribution { background: rgba(15,20,32,.82) !i
                     const v = p.get('v').split(',').map(Number);
                     if (v.length === 3 && v.every(isFinite)) map.setView([v[0], v[1]], v[2]);
                 }
+                // Un link con la partenza deve APRIRSI CERCATO. Prima riempiva
+                // i campi e si fermava: l'autista riceveva "Bari -> Rimini" gia'
+                // scritto sopra una mappa vuota, e doveva capire da solo di
+                // premere Cerca. Emerso nel test reale del link condiviso
+                // (12/08/2026). Il rinvio lascia finire l'avvio: analizzaPercorso
+                // geocodifica, disegna la rotta e fa il render.
+                if ((p.get('start') || '').trim()) {
+                    setTimeout(function () {
+                        try { analizzaPercorso(); } catch (e) {}
+                    }, 600);
+                }
                 return true;
             }
 
@@ -5237,7 +5534,11 @@ body.theme-dark .leaflet-control-attribution { background: rgba(15,20,32,.82) !i
                 let nAttivi = 0;
                 if (v('brandFilter') !== 'ALL') nAttivi++;
                 if (v('payFilter') !== 'ALL' || MSEL.Pay.sel.size) nAttivi++;
-                if (v('srvFilter') !== 'ALL') nAttivi++;
+                // i servizi del pannello non erano contati: si potevano
+                // escludere migliaia di impianti senza che il contatore
+                // dei filtri attivi battesse ciglio
+                if (v('srvFilter') !== 'ALL'
+                    || (typeof servAttivi !== 'undefined' && servAttivi.size)) nAttivi++;
                 if (document.getElementById('minPrice')?.value) nAttivi++;
                 if (document.getElementById('maxPrice')?.value) nAttivi++;
                 if (document.getElementById('soloVariazioni')?.checked) nAttivi++;
@@ -5251,6 +5552,9 @@ body.theme-dark .leaflet-control-attribution { background: rgba(15,20,32,.82) !i
                 buzz();
                 ['brandFilter', 'payFilter', 'srvFilter'].forEach(id => { const el = document.getElementById(id); if (el) el.value = 'ALL'; });
                 MSEL.Pay.sel.clear(); MSEL.Carb.sel.clear();
+                try { servAttivi.clear(); srvAlmenoUno = false;
+                      if (typeof renderPannelloServizi === 'function') renderPannelloServizi();
+                } catch (e) {}
                 document.querySelectorAll('.msel-pan input[type=checkbox]').forEach(b => {
                     b.checked = false; });
                 chipCostruisci();
@@ -5420,8 +5724,15 @@ body.theme-dark .leaflet-control-attribution { background: rgba(15,20,32,.82) !i
                 let totale = 0, litri = 0;
                 p.stops.forEach((s, i) => {
                     totale += s.cost; litri += s.fill;
+                    // La sosta si apre: si chiude il piano, la mappa va sull'impianto
+                    // e ne apre la scheda. Prima erano riquadri morti — si leggeva
+                    // "fermati al km 482" e non c'era modo di vedere dove fosse.
                     html += `
-                        <div style="border:1px solid var(--border-subtle); border-radius:10px; padding:11px; margin-bottom:8px; background:var(--surface-low);">
+                        <div class="pl-sosta" role="button" tabindex="0"
+                             onclick="chiudiPiano(); vaiA('${esc(escJs(s.d.key))}')"
+                             onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();chiudiPiano();vaiA('${esc(escJs(s.d.key))}');}"
+                             title="${_tc('pl_apri', 'Apri questo impianto sulla mappa')}"
+                             style="border:1px solid var(--border-subtle); border-radius:10px; padding:11px; margin-bottom:8px; background:var(--surface-low); cursor:pointer;">
                             <div style="display:flex; justify-content:space-between; align-items:center;">
                                 <b style="font-size:13px; color:var(--primary);">${i+1}. ${esc(s.d.brand)} · PV ${esc(s.d.pv)}</b>
                                 <span style="font-family:var(--mono); font-weight:700; color:var(--success);">${s.price.toFixed(DEC)} p/L</span>
@@ -5429,6 +5740,7 @@ body.theme-dark .leaflet-control-attribution { background: rgba(15,20,32,.82) !i
                             <div style="font-size:11px; color:var(--on-surface-variant); margin-top:3px; text-transform:capitalize;">${esc(s.d.addr)}</div>
                             ${cartaSosta(s)}
                             <div style="font-size:11.5px; font-weight:700; margin-top:6px;">📍 ${_tc('pl_al_km', 'al km')} ${Math.round(s.km)} · ⛽ ${_tc('pl_rifornisci', 'rifornisci')} ~${Math.round(s.fill)} L · 💶 ~${eTot(s.cost)}</div>
+                            <div style="font-size:10.5px; color:var(--on-surface-variant); margin-top:5px;">${_tc('pl_tocca', 'Tocca per vederlo sulla mappa')} →</div>
                         </div>`;
                 });
                 if (p.stops.length) {
@@ -5986,12 +6298,51 @@ body.theme-dark .leaflet-control-attribution { background: rgba(15,20,32,.82) !i
                 // stesso impianto puo' portare la stessa carta con due codici
                 // (quello del ministero e il nome per esteso), e valutarla due
                 // volte sarebbe solo lavoro sprecato a ogni render.
-                for (const carta of carteConRegole(d)) {
+                //
+                // SE C'E' UN FILTRO CARTA, SI GUARDANO SOLO QUELLE.
+                //   Prima si valutavano tutte le carte presenti sull'impianto,
+                //   filtro o no. Cercando WEX EDC la lista mostrava impianti
+                //   giusti — accettano EDC — ma col prezzo e l'etichetta della
+                //   Cartissima Q8, perche' li' conveniva di piu'. E dato che
+                //   "da qui in giu' classifica, pin e card usano questo numero",
+                //   l'intero ordinamento nasceva da una carta che l'autista
+                //   poteva non avere in tasca. Segnalato da Davide il 12/08/2026.
+                const scelte = (typeof carteScelteAttive === 'function')
+                    ? carteScelteAttive() : [];
+                let candidate = carteConRegole(d);
+                if (scelte.length) {
+                    const soloScelte = candidate.filter(c => scelte.indexOf(c) >= 0);
+                    // Se il filtro non tocca nessuna carta con regole su questo
+                    // impianto si lascia il calcolo di prima: meglio un prezzo
+                    // effettivo che nessuno.
+                    if (soloScelte.length) candidate = soloScelte;
+                }
+                for (const carta of candidate) {
                     const r = prezzoEffettivo(d, fuel, carta, f.p);
-                    if (r && (!best || r.p < best.p - 1e-9))
+                    if (r && (!best || cartaBatte(r.p, carta, best.p, best.carta)))
                         best = { p: r.p, det: r.det, carta: carta, base: f.p };
                 }
                 return best;
+            }
+
+            // ═══ Pareggio: vince Q8 ═══
+            // Regola commerciale (Davide, 12/08/2026): se dopo sconti e
+            // commissioni due carte arrivano allo STESSO prezzo finale, la
+            // scelta indicata e' Cartissima Q8. La parita' vera e' frequente
+            // (stessa base ministeriale, sconti uguali) e prima la decideva
+            // l'ordine di caricamento dei dati: stesso impianto, giorni
+            // diversi, carta "consigliata" diversa. Ora e' deterministica.
+            const CARTA_PRIORITA = ['WEX Cartissima Q8'];
+            function cartaRango(nome) {
+                const i = CARTA_PRIORITA.indexOf(nome);
+                return i >= 0 ? i : CARTA_PRIORITA.length;
+            }
+            // "la nuova batte la migliore attuale?" - prezzo piu' basso vince
+            // sempre; a parita' (entro un decimillesimo) decide il rango.
+            function cartaBatte(pNuovo, cartaNuova, pBest, cartaBest) {
+                if (pNuovo < pBest - 1e-9) return true;
+                if (pNuovo > pBest + 1e-9) return false;
+                return cartaRango(cartaNuova) < cartaRango(cartaBest);
             }
 
             function condInit() {
@@ -6016,6 +6367,10 @@ body.theme-dark .leaflet-control-attribution { background: rgba(15,20,32,.82) !i
                 condCostruisci();
                 costruisciServiziCarta();
                 condAggiornaStato();
+                // il pulsante-scorciatoia in barra si accende solo ora: il
+                // locator parte prima dei dati, quando la sezione e' ancora
+                // nascosta, e il suo sync all'avvio vedeva "niente condizioni"
+                try { if (typeof locCondSync === 'function') locCondSync(); } catch (e) {}
             }
 
             // t() vive nel modulo 13, che si carica DOPO questo: al primo
@@ -6139,7 +6494,11 @@ body.theme-dark .leaflet-control-attribution { background: rgba(15,20,32,.82) !i
                 const righe = carte
                     .map(c => ({ c: c, r: prezzoEffettivo(d, fuel, c, f.p) }))
                     .filter(x => x.r)
-                    .sort((a, b) => a.r.p - b.r.p);
+                    // a parita' di prezzo finale il badge CONVIENE va a Q8:
+                    // stessa regola di migliorCarta, o scheda e pin litigano
+                    .sort((a, b) => Math.abs(a.r.p - b.r.p) <= 1e-9
+                        ? cartaRango(a.c) - cartaRango(b.c)
+                        : a.r.p - b.r.p);
                 // Le carte a fisso di zona senza fisso dichiarato non hanno un
                 // prezzo: si dicono a parole, in fondo, invece di sparire senza
                 // spiegazione (o peggio, come prima, col prezzo alla pompa).
@@ -6717,6 +7076,16 @@ body.theme-dark .leaflet-control-attribution { background: rgba(15,20,32,.82) !i
             // Il filtro a tendina resta per chi cerca una voce sola; questo
             // pannello serve a comporre una sosta ("bagni + ristorante + camion").
             let servAttivi = new Set();
+            // "tutti i servizi chiesti" (AND) oppure "almeno uno" (OR). L'AND e'
+            // il valore di partenza perche' e' quello che uno intende spuntando
+            // due caselle; l'OR e' la via d'uscita quando l'AND svuota la lista,
+            // e si offre da solo nella fascia sopra i risultati.
+            let srvAlmenoUno = false;
+            function srvModoCambia(almenoUno) {
+                srvAlmenoUno = !!almenoUno;
+                try { renderPannelloServizi(); } catch (e) {}
+                render();
+            }
 
             function catalogoServizi() {
                 const inSt = new Map(), nearby = new Map();
@@ -6832,6 +7201,41 @@ body.theme-dark .leaflet-control-attribution { background: rgba(15,20,32,.82) !i
             }
             function haServizio(d, nome) {
                 return (d.srv || []).indexOf(nome) !== -1 || (d.poi && d.poi[nome] !== undefined);
+            }
+
+            /* ═════════ ASSENZA DI DATO ≠ ASSENZA DI SERVIZIO ═════════
+               Le sette fonti nazionali usano vocabolari DIVERSI: 62 etichette
+               in tutto, 50 delle quali esistono in un solo Paese. "HVO",
+               "Self service", "Adatto ai bilici" sono voci italiane; "Accesso
+               mezzi pesanti" e' l'unica presente in tutti e sette.
+
+               Filtrando alla lettera, chiedere HVO cancellava la Germania
+               intera - non perche' i tedeschi non abbiano HVO, ma perche' la
+               fonte tedesca non lo dichiara. Il portale affermava il falso.
+               Segnalato da Davide il 12/08/2026 ("clicco una scheda e mezza
+               Europa scompare").
+
+               Regola nuova: si esclude solo dove il dato ESISTE e dice di no.
+               Dove la fonte quel servizio non lo censisce proprio, l'impianto
+               resta in mappa e viene marcato "non dichiarato". */
+            var _srvPaesi = null;     // servizio -> Set(paesi che lo censiscono)
+            function paeseDi(d) { return (d.prov && d.prov.length > 3) ? d.prov : PAESE; }
+            function srvCensitoIn(nome, paese) {
+                if (!_srvPaesi) {
+                    _srvPaesi = {};
+                    for (const d of (window.datiMappa || [])) {
+                        const p = paeseDi(d);
+                        for (const s of (d.srv || [])) (_srvPaesi[s] = _srvPaesi[s] || {})[p] = 1;
+                        for (const k in (d.poi || {})) (_srvPaesi[k] = _srvPaesi[k] || {})[p] = 1;
+                    }
+                }
+                return !!(_srvPaesi[nome] && _srvPaesi[nome][paese]);
+            }
+            // 'si' = ce l'ha · 'no' = la fonte lo censisce e questo non ce l'ha
+            // · 'ignoto' = in questo Paese il servizio non e' censito
+            function statoServizio(d, nome) {
+                if (haServizio(d, nome)) return 'si';
+                return srvCensitoIn(nome, paeseDi(d)) ? 'no' : 'ignoto';
             }
 
             // ==== Layer aree di sosta ====
@@ -6960,8 +7364,32 @@ body.theme-dark .leaflet-control-attribution { background: rgba(15,20,32,.82) !i
             function renderPrefList() {
                 const body = document.getElementById('pdBody');
                 const conta = document.getElementById('pdCount');
+                // I preferiti si ordinano per PREZZO, non per indirizzo.
+                //
+                // Chi apre i preferiti non cerca un impianto: sa gia' quali
+                // sono, e vuole sapere dove conviene fare il pieno oggi.
+                // L'ordine alfabetico non rispondeva a quella domanda, e il
+                // confronto lo faceva l'occhio scorrendo la lista.
+                //
+                // Il prezzo di riferimento e' quello EFFETTIVO quando ci sono
+                // le condizioni del cliente: il piu' conveniente e' quello che
+                // paghi meno, non quello col listino piu' basso.
+                const carbRif = (document.getElementById('fuel') || {}).value;
+                const prezzoRif = d => {
+                    const f = (d.fuels || {})[carbRif];
+                    if (!f) return null;
+                    return (d.eff && d.eff.p != null) ? d.eff.p : f.p;
+                };
                 const scelti = fullData.filter(d => preferiti.has(d.key))
-                    .sort((a, b) => (a.addr || '').localeCompare(b.addr || ''));
+                    .sort((a, b) => {
+                        const pa = prezzoRif(a), pb = prezzoRif(b);
+                        // chi non eroga il carburante scelto va in fondo, non in cima
+                        if (pa == null && pb == null) return (a.addr || '').localeCompare(b.addr || '');
+                        if (pa == null) return 1;
+                        if (pb == null) return -1;
+                        return pa - pb;
+                    });
+                const minimo = scelti.map(prezzoRif).filter(v => v != null)[0] ?? null;
                 conta.textContent = scelti.length ? `(${scelti.length})` : '';
                 if (!scelti.length) {
                     body.innerHTML = `<div class="pd-vuoto"><span class="big">☆</span>${t('pd_vuoto')}</div>`;
@@ -6977,11 +7405,20 @@ body.theme-dark .leaflet-control-attribution { background: rgba(15,20,32,.82) !i
                         </div>
                         <div class="pd-agg" style="text-align:right; margin-top:-4px; padding-bottom:4px;">${t('pd_agg')}: ${esc(f.d_full || f.d_short || '—')}</div>`;
                     }).join('');
-                    return `<div class="pd-card">
+                    // Fascia sul piu' conveniente, e per gli altri quanto
+                    // costa in piu' al litro: due numeri accanto dicono piu'
+                    // di due prezzi lontani in una lista.
+                    const pr = prezzoRif(d);
+                    const eIlMigliore = minimo != null && pr != null && Math.abs(pr - minimo) < 1e-9;
+                    const diff = (minimo != null && pr != null && !eIlMigliore) ? (pr - minimo) : null;
+                    return `<div class="pd-card${eIlMigliore ? ' pd-best' : ''}">
+                        ${eIlMigliore ? `<div class="pd-best-fascia">\u2605 ${t('pd_migliore')}</div>` : ''}
+                        ${diff != null ? `<div class="pd-diff">+${diff.toFixed(DEC)} ${t('pd_al_litro')}</div>` : ''}
                         <div class="pd-card-head">
                             ${brandChip(d.brand)}
                             <div class="pd-addr"><b>${esc(d.addr || d.key)}</b><small>${esc(d.brand)} · PV ${esc(d.pv)}${d.prov ? ' · ' + esc(d.prov) : ''}</small></div>
                         </div>
+                        ${cartaPreferito(d)}
                         <div class="pd-fuels">${fuels}</div>
                         <div class="pd-actions">
                             <button class="pd-btn" onclick="prefVaiA('${esc(escJs(d.key))}')">🗺 ${t('pd_vai')}</button>
@@ -7089,6 +7526,67 @@ body.theme-dark .leaflet-control-attribution { background: rgba(15,20,32,.82) !i
                 return `<span class="pin-b" style="background:${bg}; color:${fg};">${esc(label)}</span>`;
             }
 
+            // ==== Pin: insegna e carta (variante D) ====
+            // Due domande diverse, due segni diversi. L'insegna e' "dove sto
+            // andando", si cerca dal cavalcavia e la porta il COLORE: il
+            // pallino sta in 14px e non allarga la pastiglia, cosi' i prezzi
+            // restano incolonnati e si confrontano a colpo d'occhio. La carta
+            // e' "cosa tiro fuori alla colonnina", serve dopo, e scende sotto.
+            // Sigla corta apposta: dentro un cerchio di 14px tre lettere non ci
+            // stanno. Il colore fa gia' il lavoro, le lettere disambiguano
+            // (Eni giallo ed Esso rosso non si confondono, ma "E" ed "E" si').
+            const INS_SIGLA = { 'Q8E': 'Q8', 'Q8': 'Q8', 'ENI': 'EN', 'ESSO': 'ES', 'TAM': 'TA', 'IP': 'IP' };
+            function pallinoInsegna(brand) {
+                const key = String(brand || '').toUpperCase();
+                const hit = BRAND_STYLE.find(b => key.includes(b[0]));
+                // Insegna fuori dalle sei note (pompe bianche, reti estere del
+                // portale unificato): pallino grigio con le iniziali. Sparire
+                // del tutto direbbe "qui non c'e' un'insegna", che e' falso, e
+                // il pin senza pallino sembrerebbe un difetto di allineamento.
+                let bg = '#64748b', fg = '#fff', sigla;
+                if (hit) { bg = hit[1]; fg = hit[3]; sigla = INS_SIGLA[hit[2]] || hit[2].slice(0, 2); }
+                else {
+                    sigla = key.replace(/[^A-Z0-9]/g, '').slice(0, 2);
+                    if (!sigla) return '';
+                }
+                return `<span class="pin-ins" style="background:${bg}; color:${fg}; font-size:7.5px;"` +
+                       ` title="${esc(brand || '')}">${esc(sigla)}</span>`;
+            }
+            // La targhetta esce solo con DUE o piu' carte scelte: con una sola
+            // sarebbe identica su ogni pin, e una scritta uguale ovunque non
+            // informa - toglie spazio alla mappa e basta.
+            function targhettaCarta(d, fuel) {
+                const scelte = (typeof carteScelteAttive === 'function') ? carteScelteAttive() : [];
+                if (scelte.length < 2) return '';
+                const qui = scelte.filter(c => (d.pay || []).indexOf(c) >= 0);
+                if (!qui.length) return '';
+
+                let mostra = qui;
+                if (qui.length > 1 && typeof condAttive === 'function' && condAttive()
+                        && typeof migliorCarta === 'function') {
+                    try {
+                        const best = migliorCarta(d, fuel);
+                        if (best && best.carta && qui.indexOf(best.carta) >= 0) mostra = [best.carta];
+                    } catch (e) { /* si resta sull'elenco */ }
+                }
+                // Piu' carte e nessun criterio per sceglierne una: il conteggio
+                // e' onesto, "3 carte" non finge una raccomandazione che non c'e'.
+                if (mostra.length > 2)
+                    return `<span class="pin-carta-sot" style="background:#334155; border-color:#334155;">` +
+                           `${mostra.length} ${esc(t('pcs_carte'))}</span>`;
+
+                const c = mostra[0];
+                const st = CARTA_STILE[c] || [String(c).replace(/^WEX /, '').slice(0, 4), '#334155'];
+                const scelto = qui.length > 1 && mostra.length === 1;
+                const nome = (typeof nomeCartaBreve === 'function') ? nomeCartaBreve(c) : st[0];
+                const testo = mostra.length === 2
+                    ? mostra.map(x => (CARTA_STILE[x] || ['?'])[0]).join(' / ')
+                    : nome;
+                return `<span class="pin-carta-sot" style="background:${st[1]}; border-color:${st[1]};"` +
+                       ` title="${esc(scelto ? t('pcs_migliore').replace('{n}', qui.length) : nome)}">` +
+                       `${esc(testo)}${scelto ? '<i class="pcs-dot"></i>' : ''}</span>`;
+            }
+
             // Posizione competitiva: rank contro TUTTI gli impianti (ogni bandiera) entro 5 km
             function mktBadgeCompact(d, fuel) {
                 const m = d.mkt && d.mkt[fuel];
@@ -7194,6 +7692,116 @@ body.theme-dark .leaflet-control-attribution { background: rgba(15,20,32,.82) !i
             const markerCache = new Map();   // key -> { marker, sig }
             let inCluster = new Set();
 
+
+            // ── La pastiglia della mappa mostra la CARTA quando c'e' un filtro ──
+            //
+            // IL MALINTESO CHE RISOLVE
+            //   Filtrando per WEX EDC sulla Bologna-Firenze restavano 72 impianti
+            //   su 324: il filtro lavorava benissimo. Ma le pastiglie continuavano
+            //   a dire Q8, TAM, AFP — cioe' i MARCHI — e la lettura naturale era
+            //   "mi mostra tutti i distributori lo stesso". Mancava il riscontro,
+            //   non il filtro. Segnalato da Davide il 12/08/2026.
+            //
+            // COSA MOSTRA
+            //   nessun filtro          il marchio, come prima
+            //   una carta              quella carta
+            //   piu' carte, sconti off le sigle se ci stanno, sopra le due il conteggio
+            //   piu' carte, sconti on  la carta col prezzo effettivo piu' basso
+            //
+            //   Sempre e solo l'INTERSEZIONE fra le carte scelte e quelle che
+            //   l'impianto accetta davvero: se scegli EDC e DKV ma li' passa solo
+            //   EDC, la pastiglia dice EDC.
+            //
+            //   Senza sconti attivi il prezzo alla pompa e' identico per tutte le
+            //   carte: la carta dice DOVE puoi pagare, non QUANTO. Per questo con
+            //   piu' carte non si sceglie a caso una da mostrare.
+            const CARTA_STILE = {
+                'WEX Cartissima Q8':     ['CQ8',   '#0033a0'],
+                'WEX EDC':               ['EDC',   '#c8102e'],
+                'WEX DKV National':      ['DKV',   '#00543d'],
+                'WEX DKV International': ['DKV-I', '#00543d'],
+            };
+
+            function carteScelteAttive() {
+                if (typeof MSEL !== 'undefined' && MSEL.Pay && MSEL.Pay.sel.size)
+                    return Array.from(MSEL.Pay.sel);
+                const s = document.getElementById('payFilter');
+                return (s && s.value && s.value !== 'ALL') ? [s.value] : [];
+            }
+
+            function chipCarta(d, fuel) {
+                const scelte = carteScelteAttive();
+                if (!scelte.length) return brandChip(d.brand);
+
+                const qui = scelte.filter(c => (d.pay || []).indexOf(c) >= 0);
+                if (!qui.length) return brandChip(d.brand);   // non dovrebbe capitare: e' filtrato
+
+                let mostra = qui;
+                // Con gli sconti attivi la scelta ha un criterio vero: il prezzo
+                // effettivo. Senza, sarebbe un sorteggio.
+                if (qui.length > 1 && typeof condAttive === 'function' && condAttive()
+                        && typeof migliorCarta === 'function') {
+                    try {
+                        const best = migliorCarta(d, fuel);
+                        if (best && best.carta && qui.indexOf(best.carta) >= 0) mostra = [best.carta];
+                    } catch (e) { /* si resta sull'elenco */ }
+                }
+
+                if (mostra.length > 2) {
+                    return `<span class="pin-b" style="background:#334155; color:#fff;">${mostra.length} carte</span>`;
+                }
+                // "unica carta possibile" e "la migliore fra le tue" non sono la
+                // stessa cosa, e con la sola sigla si leggevano uguali. Quando la
+                // scelta c'era davvero — piu' carte tue accettate qui, e una
+                // conviene — la pastiglia porta un puntino e il titolo lo dice.
+                const scelto = qui.length > 1 && mostra.length === 1;
+                return mostra.map(c => {
+                    const st = CARTA_STILE[c] || [String(c).replace(/^WEX /, '').slice(0, 4), '#334155'];
+                    const titolo = scelto
+                        ? `${nomeCartaBreve(c)}: la piu' conveniente qui fra le tue ${qui.length} carte`
+                        : nomeCartaBreve(c);
+                    return `<span class="pin-b${scelto ? ' pin-b-best' : ''}" title="${esc(titolo)}" `
+                         + `style="background:${st[1]}; color:#fff;">${esc(st[0])}${scelto ? '<i class="pb-dot"></i>' : ''}</span>`;
+                }).join('');
+            }
+
+
+            // Nome leggibile della carta per i suggerimenti a comparsa.
+            function nomeCartaBreve(c) {
+                return (typeof nomeCarta === 'function') ? nomeCarta(c)
+                     : String(c).replace(/^WEX /, '');
+            }
+
+
+            // ── Con quale carta conviene andarci ──
+            //
+            // Sapere che un preferito costa meno non basta: il prezzo che paghi
+            // dipende dalla carta che tiri fuori. Qui si dice quale, e la riga
+            // e' la stessa che compare nella scheda dell'impianto, cosi' non si
+            // impara due volte la stessa cosa.
+            //
+            //   con gli sconti attivi   la carta col prezzo effettivo piu' basso
+            //   senza sconti            le carte accettate li' fra quelle scelte,
+            //                           o tutte quelle accettate se non filtri
+            function cartaPreferito(d) {
+                if (typeof nomeCarta !== 'function') return '';
+                const col = c => (typeof coloreCarta === 'function' ? coloreCarta(c) : 'var(--primary)');
+
+                if (d.eff && d.eff.carta) {
+                    return `<div class="pd-carta"><span class="eff-tag" style="--ec:${col(d.eff.carta)}">`
+                         + `\uD83D\uDCB3 ${esc(nomeCarta(d.eff.carta))}</span>`
+                         + `<span class="pd-carta-nota">${t('pd_con_carta')}</span></div>`;
+                }
+                const scelte = (typeof carteScelteAttive === 'function') ? carteScelteAttive() : [];
+                let carte = (d.pay || []);
+                if (scelte.length) carte = carte.filter(c => scelte.indexOf(c) >= 0);
+                if (!carte.length) return '';
+                return `<div class="pd-carta">`
+                     + carte.slice(0, 3).map(c =>
+                         `<span class="eff-tag" style="--ec:${col(c)}">\uD83D\uDCB3 ${esc(nomeCarta(c))}</span>`).join(' ')
+                     + (carte.length > 3 ? `<span class="pd-carta-nota">+${carte.length - 3}</span>` : '')
+                     + `</div>`;
+            }
             // Motore mappa: basemap CARTO su dati OpenStreetMap (licenza pulita,
             // niente tile Google fuori ToS). Due temi: Voyager e Dark Matter.
             // wheelPxPerZoomLevel: quanti pixel di scorrimento valgono un
@@ -7220,7 +7828,7 @@ body.theme-dark .leaflet-control-attribution { background: rgba(15,20,32,.82) !i
                 // i crediti delle fonti prezzi vivono qui, nella riga di
                 // attribuzione: discreti ma sempre visibili (obbligo di
                 // licenza per alcune fonti), e fuori dalla guida.
-                attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> © <a href="https://carto.com/attributions">CARTO</a> · Prices: Fuel Finder (CMA open data) · Network: Radius eRoute, UK Fuels · Internal company use',
+                attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> © <a href="https://carto.com/attributions">CARTO</a> · Prices: Fuel Finder (CMA open data) · Network: Radius eRoute, UK Fuels · Internal company use · Loghi insegne: Wikimedia Commons — marchi dei rispettivi titolari, usati per identificare gli impianti delle rispettive reti',
                 maxZoom: 20, subdomains: 'abcd',
                 updateWhenIdle: false,     // tile richieste ANCHE mentre si scorre
                 updateWhenZooming: true,   // ...e anche durante l'animazione di zoom
@@ -7665,6 +8273,16 @@ body.theme-dark .leaflet-control-attribution { background: rgba(15,20,32,.82) !i
                         for (let i = 1; i < window.currentPath.length; i++) {
                             window.routeCum[i] = window.routeCum[i-1] + map.distance(window.currentPath[i-1], window.currentPath[i]) / 1000;
                         }
+                        // Rete di sicurezza: se la rotta termina lontano dal
+                        // punto chiesto (coordinata in area pedonale, isola
+                        // senza traghetto, aggancio stradale sbagliato) va
+                        // DETTO. Un percorso che finisce altrove in silenzio
+                        // si scopre solo arrivati nel posto sbagliato.
+                        const fine = window.currentPath[window.currentPath.length - 1];
+                        const scartoM = map.distance(fine, latLngE);
+                        if (scartoM > 2000) {
+                            notifica(t('rt_fine_lontana').replace('{km}', (scartoM / 1000).toFixed(1)));
+                        }
                         L.polyline(window.currentPath, {color: '#3b82f6', weight: 6, opacity: 0.8}).addTo(routeLayer);
                         map.fitBounds(L.polyline(window.currentPath).getBounds(), {padding: [50, 50]});
                         // Lungo un percorso "il piu' economico" e' l'ordine sbagliato:
@@ -7829,6 +8447,11 @@ body.theme-dark .leaflet-control-attribution { background: rgba(15,20,32,.82) !i
                 const fuel = carbPrimario();
                 const carbRichiesti = [...MSEL.Carb.sel];
                 const carteScelte = MSEL.Pay.sel;
+                // Impianti esclusi SOLO perche' fuori raggio: l'analisi costo/beneficio
+                // ha bisogno di sapere cosa ci sarebbe allargando, altrimenti puo'
+                // solo dire "com'e' adesso" e mai "conviene allargare".
+                const OLTRE = [];
+                window.__oltreRaggio = OLTRE;
                 const isNat = document.getElementById('tuttaItalia').checked;
                 const showOnlyDeltas = document.getElementById('soloVariazioni') && document.getElementById('soloVariazioni').checked;
                 const soloTruck = document.getElementById('soloTruck') && document.getElementById('soloTruck').checked;
@@ -7935,17 +8558,35 @@ body.theme-dark .leaflet-control-attribution { background: rgba(15,20,32,.82) !i
                     // selezione e' una sola, quella del pannello (servAttivi),
                     // e il menu a tendina ci scrive dentro. Due controlli sulla
                     // stessa cosa potevano dire due cose diverse.
-                    // I servizi ESCLUDONO solo se l'ufficio ha scelto cosi'
-                    // (console, pagina Percorso e soste). Di base ORDINANO: da
-                    // Milano a Napoli chiedendo "docce e officina" un filtro
-                    // rigido restituisce due risultati o zero, e chi guida non
-                    // sa se e' colpa sua o dei dati. Ordinando, la lista non e'
-                    // mai vuota e ogni impianto dichiara quali dei servizi
-                    // chiesti ha davvero.
-                    const _rtSrv = (typeof rtConfig === 'function') ? rtConfig().servizi : 'filtra';
-                    if(servAttivi.size && _rtSrv === 'filtra') {
-                        for (const s of servAttivi) if (!haServizio(d, s)) return KO('servizio');
-                    }
+                    // I servizi ORA FILTRANO. Prima ordinavano soltanto, per non
+                    // lasciare vuota una tratta lunga chiedendo "docce e
+                    // officina": ragionamento giusto, effetto pessimo. Chi
+                    // spuntava HVO vedeva gli stessi 143 pin di prima e
+                    // concludeva che il portale era rotto - segnalato dal campo.
+                    // Il timore di allora e' risolto meglio dalla fascia sopra
+                    // la lista (srvFascia): dice quanti sono esclusi, offre
+                    // "almeno uno" al posto di "tutti", e quando restano zero
+                    // spiega che e' colpa del filtro e non dei dati.
+                    // Si esclude solo dove la fonte dice NO. Dove il servizio
+                    // non e' censito in quel Paese l'impianto resta, marcato:
+                    // v. statoServizio() nel modulo 15 per il perche'.
+                    if (servAttivi.size) {
+                        let ignoti = 0, si = 0;
+                        for (const s of servAttivi) {
+                            const st = statoServizio(d, s);
+                            if (st === 'no' && !srvAlmenoUno) return KO('servizio');
+                            if (st === 'si') si++;
+                            else if (st === 'ignoto') ignoti++;
+                        }
+                        if (srvAlmenoUno && !si && !ignoti) return KO('servizio');
+                        // niente conferma per nessuno dei servizi chiesti: la
+                        // scheda lo dira' invece di far finta di sapere.
+                        // Il conteggio NON si fa qui: a questo punto mancano
+                        // ancora scudo, freschezza e raggio, e la fascia
+                        // annunciava piu' "senza informazione" degli impianti
+                        // effettivamente rimasti in mappa. Si conta sul pool.
+                        d.srv_ignoto = (!si && ignoti > 0) ? ignoti : 0;
+                    } else { d.srv_ignoto = 0; }
                     
                     if(daysSelection === "today" && f.d_short !== todayStr) return KO('dato_vecchio');
                     if(daysSelection !== "today" && daysSelection !== "0") {
@@ -7979,17 +8620,20 @@ body.theme-dark .leaflet-control-attribution { background: rgba(15,20,32,.82) !i
                     
                     if(window.currentPath) {
                         if (routeBounds && !routeBounds.contains([d.lat, d.lng])) return KO('raggio');
+                        // (la distanza si calcola comunque: serve all'analisi del raggio)
                         let minD = 999999, minI = 0;
                         for(let i=0; i<window.currentPath.length; i+=30) {
                             let dist = map.distance([d.lat, d.lng], window.currentPath[i]); if(dist < minD) { minD = dist; minI = i; }
                         }
                         d.dist_km = minD / 1000;
                         d.route_km = window.routeCum ? window.routeCum[minI] : null;
-                        return minD <= rad ? true : KO('raggio');
+                        if (minD > rad) { OLTRE.push(d); return KO('raggio'); }
+                        return true;
                     } else if(window.currentCenter) {
                         let dist = map.distance([d.lat, d.lng], window.currentCenter);
                         d.dist_km = dist / 1000;
-                        return dist <= rad ? true : KO('raggio');
+                        if (dist > rad) { OLTRE.push(d); return KO('raggio'); }
+                        return true;
                     } else if (!isNat && userDrawnZones.length === 0) return KO('nessuna_area');
                     
                     return true;
@@ -8112,6 +8756,7 @@ body.theme-dark .leaflet-control-attribution { background: rgba(15,20,32,.82) !i
                     pool = pool.filter(d => d.acc === 'ver' || d.acc === 'est');
 
                 pool.forEach(d => { d.eff = migliorCarta(d, fuelDi(d)); });
+                window.__ctxRaggio = { fuel: fuel, avgPrice: null, litri: 0, consumo: 0 };
 
                 // Advisor: risparmio netto per ogni impianto della selezione.
                 // Con un itinerario attivo il risparmio netto E' l'ordinamento:
@@ -8135,6 +8780,46 @@ body.theme-dark .leaflet-control-attribution { background: rgba(15,20,32,.82) !i
                         d.adv_net = lordo - detour;
                         d.adv_detour = detour;
                     } else { d.adv_net = null; d.adv_detour = 0; }
+                });
+                window.__ctxRaggio = { fuel: fuel, avgPrice: avgPrice, litri: advLitri, consumo: advConsumo };
+                if (typeof raggioDisegna === 'function') raggioDisegna(pool, OLTRE);
+
+                // Fascia dei servizi: senza, un filtro che esclude 1.300
+                // impianti lavora in silenzio e la lista corta sembra un guasto.
+                // Dice quanti sono rimasti, quanti sono caduti e come allentare.
+                if (typeof servAttivi !== 'undefined' && servAttivi.size) {
+                    const esclusi = escl['servizio'] || 0;
+                    const chiesti = [...servAttivi];
+                    // i due numeri veri, letti sul pool finale: chi il servizio
+                    // ce l'ha DICHIARATO, e chi resta in mappa solo perche' la
+                    // sua fonte nazionale non lo censisce
+                    const nSrvIgnoti = pool.reduce((n, d) => n + (d.srv_ignoto ? 1 : 0), 0);
+                    const nConferma = pool.length - nSrvIgnoti;
+                    const el = document.createElement('div');
+                    el.className = 'srv-fascia' + (pool.length ? '' : ' vuota');
+                    const elenco = chiesti.map(s => esc(s)).join(srvAlmenoUno ? ' / ' : ' + ');
+                    const testa = pool.length
+                        ? t('srvf_trovati').replace('{n}', nConferma.toLocaleString('it-IT')).replace('{srv}', elenco)
+                        : t('srvf_nessuno').replace('{srv}', elenco);
+                    let azioni = '';
+                    // "almeno uno" si propone solo se ha senso: con un servizio
+                    // solo AND e OR danno lo stesso identico risultato.
+                    if (chiesti.length > 1 && !srvAlmenoUno)
+                        azioni += `<button type="button" onclick="srvModoCambia(true)">${esc(t('srvf_almeno'))}</button>`;
+                    if (srvAlmenoUno)
+                        azioni += `<button type="button" onclick="srvModoCambia(false)">${esc(t('srvf_tutti'))}</button>`;
+                    azioni += `<button type="button" onclick="azzeraServizi()">${esc(t('srvf_togli'))}</button>`;
+                    el.innerHTML = `<span class="srvf-t">${testa}</span>` +
+                        (esclusi ? `<span class="srvf-e">${t('srvf_esclusi').replace('{n}', esclusi.toLocaleString('it-IT'))}</span>` : '') +
+                        // Il terzo numero e' quello che mancava: quanti restano
+                        // in mappa perche' la fonte del loro Paese quel servizio
+                        // non lo censisce. Senza, l'autista legge "1.257 con HVO"
+                        // e crede che gli altri ne siano sprovvisti.
+                        (nSrvIgnoti ? `<span class="srvf-i">${t('srvf_ignoti').replace('{n}', nSrvIgnoti.toLocaleString('it-IT'))}</span>` : '') +
+                        `<span class="srvf-a">${azioni}</span>`;
+                    resultsContainer.appendChild(el);
+                }
+                ([]).forEach(d => {
                 });
 
                 // i prezzi sospetti non devono mai vincere la classifica
@@ -8246,7 +8931,17 @@ body.theme-dark .leaflet-control-attribution { background: rgba(15,20,32,.82) !i
                     ent.marker.__dvKey = d.key;
                     // pin dell'app: il n°1 e' oro con la corona, gli altri sobri
                     const appBestPin = isAppList && d.key === appBestKey;
-                    const sig = `${pinExtraClass}|${f.p.toFixed(DEC)}|${isTop10 ? 1 : 0}|${f.svFb ? 1 : 0}|${d.eff ? d.eff.p.toFixed(DEC) + '~' + d.eff.carta : ''}|${appBestPin ? 'B' : ''}`;
+                    // La firma decide quando ridisegnare l'icona. Ci entra anche
+                    // la CARTA mostrata: senza, cambiando il filtro carta il pin
+                    // restava quello di prima — funzione giusta, pastiglia vecchia.
+                    // E' il difetto in cui sono cascato scrivendo chipCarta.
+                    // Variante D: dentro il pin va l'INSEGNA (pallino, non
+                    // allarga), sotto la CARTA (targhetta). Prima la sigla della
+                    // carta stava dentro: pin di larghezze diverse, prezzi
+                    // sfalsati, confronto a occhio impossibile.
+                    const etCarta = (typeof pallinoInsegna === 'function') ? pallinoInsegna(d.brand) : '';
+                    const etSotto = (typeof targhettaCarta === 'function') ? targhettaCarta(d, fuel) : '';
+                    const sig = `${pinExtraClass}|${f.p.toFixed(DEC)}|${isTop10 ? 1 : 0}|${f.svFb ? 1 : 0}|${d.eff ? d.eff.p.toFixed(DEC) + '~' + d.eff.carta : ''}|${appBestPin ? 'B' : ''}|${etCarta}|${etSotto}`;
                     if (ent.sig !== sig) {
                         // La corona e' la stessa dell'app: il disegno dorato,
                         // non l'emoji — che cambiava faccia da un sistema
@@ -8263,7 +8958,7 @@ body.theme-dark .leaflet-control-attribution { background: rgba(15,20,32,.82) !i
                             ? ` style="border-color:${dvBrandColor(d.brand)}"` : '';
                         ent.marker.setIcon(L.divIcon({
                             className: 'custom-div-icon',
-                            html: `<div class="smart-pin ${pinCls}${f.svFb ? ' pin-servito' : ''}"${pinStile}>${corona}${brandChip(d.brand)}${pz(d.eff ? d.eff.p : f.p, d)}${f.svFb ? '<span class="pin-sv">S</span>' : ''}</div>`,
+                            html: `<div class="smart-pin ${pinCls}${f.svFb ? ' pin-servito' : ''}${etSotto ? ' con-carta' : ''}"${pinStile}>${corona}${etCarta}${pz(d.eff ? d.eff.p : f.p, d)}${f.svFb ? '<span class="pin-sv">S</span>' : ''}${etSotto}</div>`,
                             iconSize: (isTop10 || appBestPin) ? [104, 32] : [76, 26],
                             iconAnchor: (isTop10 || appBestPin) ? [52, 32] : [38, 26]
                         }));
@@ -8490,6 +9185,9 @@ body.theme-dark .leaflet-control-attribution { background: rgba(15,20,32,.82) !i
                 // il payload concorrenza (1,5MB) si decodifica in idle, mai all'avvio
                 setTimeout(() => { try { ensureCompData(); } catch (e) {} }, 3000);
 
+                // sipario: l'avvio e' completo, il velo iniziale puo' cadere
+                try { if (typeof avvioVeloVia === 'function') avvioVeloVia(); } catch (e) {}
+
                 // congedo della presentazione: brand visibile almeno 1,4s, poi dissolvenza
                 const pres = document.getElementById('presentazione');
                 if (pres && pres.style.display === 'flex') {
@@ -8581,9 +9279,16 @@ body.theme-dark .leaflet-control-attribution { background: rgba(15,20,32,.82) !i
                 msg += `${searchModeText}\n`;
 
                 const formatResult = (d, i) => {
-                    const mapLink = `https://www.google.com/maps/dir/?api=1&destination=${d.lat},${d.lng}`;
-                    const streetLink = `https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${d.lat},${d.lng}`;
-                    
+                    // Link di navigazione CORTO: 42 caratteri invece di 78.
+                    // "maps.google.com/maps?daddr=" apre la navigazione su iOS
+                    // e Android esattamente come la forma lunga. Con dieci
+                    // impianti sono 360 caratteri risparmiati, e ogni carattere
+                    // conta: oltre i ~2.000 il telefono taglia il messaggio.
+                    const mapLink = `https://maps.google.com/maps?daddr=${d.lat},${d.lng}`;
+                    // Street View non entra piu' nel messaggio: era un secondo
+                    // link per ogni impianto (venti in tutto) per una funzione
+                    // che nessun autista usa in marcia. Resta nella scheda.
+
                     let rMsg = `\n${i+1}. *${d.brand}*\n`;
                     rMsg += `📍 Indirizzo: ${d.addr}\n`;
                     rMsg += `💰 Prezzo: *${pz(prezzoDi(d).p, d)}* (${t('aggiornato')}: ${prezzoDi(d).d_full})\n`;
@@ -8640,8 +9345,60 @@ body.theme-dark .leaflet-control-attribution { background: rgba(15,20,32,.82) !i
                     });
                 }
                 
+                // ═══ La mappa, non solo l'elenco ═══
+                // Un elenco di indirizzi non si "vede": il link porta l'autista
+                // sul portale pubblico con lo STESSO stato di adesso - percorso,
+                // filtri, raggio, inquadratura - codificato nel permalink. Sul
+                // suo telefono i pin sono vivi: prezzi del giorno e GPS suo.
+                // Le condizioni commerciali NON viaggiano nel link (vivono solo
+                // in questa macchina): l'autista vede i prezzi di listino, che
+                // e' anche l'unica cosa che deve vedere.
+                const mappa = linkMappaAutista();
+                if (mappa) msg += `\n🗺️ *Vedili sulla mappa* (si aggiorna ogni giorno):\n${mappa}\n`;
+
                 msg += `\n🏁 Buon viaggio dal team Logistica!`;
                 return msg;
+            }
+
+            // Indirizzo pubblico del portale per QUESTO build: l'id carta
+            // (q8, edc, dkv, unificato, es, fr, uk, de) combacia col nome del
+            // repo su GitHub Pages. Un'anteprima locale con id sconosciuto
+            // restituisce '' e il messaggio resta senza link, senza rompersi.
+            function urlPubblicoPortale() {
+                const repo = {
+                    q8: 'fuel-radar-q8', edc: 'fuel-radar-edc', dkv: 'fuel-radar-dkv',
+                    unificato: 'fuel-radar-unificato', es: 'fuel-radar-es',
+                    fr: 'fuel-radar-fr', uk: 'fuel-radar-uk', de: 'fuel-radar-de'
+                }[window.WEX_CARTA];
+                return repo ? 'https://davidepetrucciani.github.io/' + repo + '/' : '';
+            }
+            function linkMappaAutista() {
+                const pub = urlPubblicoPortale();
+                if (!pub) return '';
+                // Link CORTO, non il permalink intero. Il permalink porta ogni
+                // filtro anche al valore di fabbrica: 250 caratteri di simboli
+                // che i linkificatori dei telefoni spezzano - e un link spezzato
+                // a meta' hash apre il portale VUOTO. Successo davvero: "sul
+                // cellulare non e' cliccabile e non funziona" (12/08/2026).
+                // Qui viaggia solo cio' che serve a rifare la ricerca: il resto
+                // (ordinamento sul netto, inquadratura sulla rotta) lo decide
+                // gia' l'auto-ricerca all'arrivo.
+                const v = id => { const el = document.getElementById(id); return el ? el.value : ''; };
+                const p = new URLSearchParams();
+                if (v('start').trim()) p.set('start', v('start').trim());
+                if (v('end').trim()) p.set('end', v('end').trim());
+                if (v('fuel')) p.set('fuel', v('fuel'));
+                if (v('radius') && v('radius') !== '15') p.set('radius', v('radius'));
+                // senza percorso il contesto e' l'inquadratura: va portata
+                if (!v('start').trim()) {
+                    try {
+                        const c = map.getCenter();
+                        p.set('v', c.lat.toFixed(4) + ',' + c.lng.toFixed(4) + ',' + map.getZoom());
+                        p.set('tuttaItalia', document.getElementById('tuttaItalia').checked ? '1' : '0');
+                    } catch (e) {}
+                }
+                const hash = p.toString();
+                return pub + (hash ? '#' + hash : '');
             }
 
             function azioneCondivisione(tipo) {
@@ -8657,7 +9414,10 @@ body.theme-dark .leaflet-control-attribution { background: rgba(15,20,32,.82) !i
                     window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
                     chiudiOpzioniCondivisione();
                 } else if (tipo === 'telegram') {
-                    window.open(`https://t.me/share/url?url=&text=${encodeURIComponent(msg)}`, '_blank');
+                    // il link della mappa va nel campo url: Telegram ci
+                    // costruisce l'anteprima cliccabile in testa al messaggio
+                    const lm = (typeof linkMappaAutista === 'function') ? linkMappaAutista() : '';
+                    window.open(`https://t.me/share/url?url=${encodeURIComponent(lm)}&text=${encodeURIComponent(msg)}`, '_blank');
                     chiudiOpzioniCondivisione();
                 }
             }
@@ -8935,35 +9695,295 @@ body.theme-dark .leaflet-control-attribution { background: rgba(15,20,32,.82) !i
            e side-collapsed per il pannello. Solo desktop: sotto i 901px il
            telefono ha gia' la sua interfaccia. */
 
+        Object.assign(I18N.it, { loc_scegli: "Scegli il posto giusto dall'elenco" });
+        Object.assign(I18N.it, { loc_autostrada: "Rete autostradale", et_direzione: "DIREZIONE" });
+        Object.assign(I18N.it, { loc_essenziale: "Vista essenziale", loc_esci_ess: "Torna ai comandi" });
+        Object.assign(I18N.it, { loc_cond: "Condizioni", loc_cond_on: "Condizioni attive: i prezzi sono i tuoi", loc_cond_off: "Condizioni non compilate: prezzi di listino" });
         Object.assign(I18N.it, {
+            mzo_utilitaria: 'Utilitaria',
+            mzo_berlina: 'Berlina',
+            mzo_suv: 'SUV / Station wagon',
+            mzo_van: 'Van derivato',
+            mzo_furgone: 'Furgone medio',
+            mzo_furgonone: 'Furgone grande',
+            mzo_autocarro: 'Autocarro leggero',
+            mzo_camion: 'Motrice',
+            mzo_truck: 'Autoarticolato',
+            mzo_bus: 'Autobus',
+            lmp_nota: 'Valori tipici della categoria: cambiali se conosci i tuoi.',
+            mz_kml: 'oppure km/L',
+            lra_v_conviene: 'Conviene allargare.',
+            lra_v_si: 'A {km} km guadagni {e} € in più per {m} minuti in più.',
+            lra_v_dipende: 'Dipende da te.',
+            lra_v_forse: 'A {km} km guadagni {e} € in più, ma ti costa {m} minuti.',
+            lra_v_no: 'Non conviene allargare.',
+            lra_v_perche_no: 'Oltre non trovi niente di meglio.',
+            lra_v_basta: 'Sei già al raggio migliore.',
+            lra_v_perche_basta: 'Allargare oltre i {km} km non aggiunge nulla.',
+            lra_oraria: 'Vale {e} €/ora del tuo tempo (soglia usata: {s} €/ora, mezzo più autista).',
+            lra_costo_km: 'ogni km di deviazione costa {e} €',
+            lra_titolo: 'Conviene allargare?', lra_migliore: 'il migliore', lra_nota: 'Deviazione andata e ritorno, tempo stimato a 50 km/h. Tocca una riga per impostare quel raggio.',
+            lr_raggio: 'Raggio dal percorso (km)',
+            pd_con_carta: 'la carta che conviene qui',
+            pd_migliore: 'il più conveniente', pd_al_litro: '€/L in più',
+            ps_titolo: 'Piano soste (serve un percorso attivo)',
+            ps_bordo: 'Litri a bordo ora',
+            ps_riserva: 'Riserva min. (L)',
+            ps_calcola: 'Calcola il piano di rifornimento',
+            ps_spiega: 'Ogni risultato mostra il risparmio netto in euro (differenza dalla mediana sui litri, meno il carburante della deviazione). Il piano sceglie dove fermarsi e quanto rifornire lungo il percorso senza mai scendere sotto la riserva.',
+            f_sospetti: 'Nascondi prezzi sospetti',
+            f_sospetti_nota: 'Esclude i prezzi vecchi di oltre 7 giorni o palesemente errati; quelli solo dubbi restano visibili ma segnalati.',
+            f_ordinamento: 'Ordinamento',
+            f_freschezza: 'Prezzi aggiornati',
+            f_pannello_srv: 'Apri il pannello servizi',
+            mz_tuo: 'Il tuo mezzo',
+            mz_litri: 'Litri da rifornire',
+            mz_consumo: 'Consumo (L/100km)',
+            mz_serbatoio: 'Serbatoio (L)',
+            ord_prezzo: 'Più economico',
+            ord_vicino: 'Più vicino',
+            ord_netto: 'Risparmio netto',
+            fr_oggi: 'Oggi',
+            fr_24: 'Ultime 24h',
+            fr_48: 'Ultime 48h',
+            fr_tutti: 'Qualsiasi',
+            mzo_pers: 'Personalizzato',
             loc_cerca: 'Cerca città, indirizzo o codice PV', loc_tir: 'Mezzi pesanti',
             loc_filtri: 'Filtri e risultati', loc_vista_completa: 'Vista completa',
             loc_vista_mappa: 'Vista mappa', loc_tutte_carte: 'Tutte le carte',
             loc_tutti_srv: 'Tutti i servizi', loc_rotta: 'Percorso',
-            et_prodotto: "Prodotto", et_carta: "Carta", et_servizi: "Servizi",
+            et_mezzo: "MEZZO", et_prodotto: "Prodotto", et_carta: "Carta", et_servizi: "Servizi",
         });
+        Object.assign(I18N.en, { loc_scegli: "Pick the right place from the list" });
+        Object.assign(I18N.en, { loc_autostrada: "Motorway network", et_direzione: "DIRECTION" });
+        Object.assign(I18N.en, { loc_essenziale: "Simple view", loc_esci_ess: "Back to controls" });
+        Object.assign(I18N.en, { loc_cond: "Terms", loc_cond_on: "Terms applied: these are your prices", loc_cond_off: "No terms set: list prices" });
         Object.assign(I18N.en, {
+            mzo_utilitaria: 'City car',
+            mzo_berlina: 'Saloon',
+            mzo_suv: 'SUV / Estate',
+            mzo_van: 'Car-derived van',
+            mzo_furgone: 'Medium van',
+            mzo_furgonone: 'Large van',
+            mzo_autocarro: 'Light truck',
+            mzo_camion: 'Rigid truck',
+            mzo_truck: 'Articulated lorry',
+            mzo_bus: 'Coach',
+            lmp_nota: 'Typical values for the category: change them if you know yours.',
+            mz_kml: 'or km/L',
+            lra_v_conviene: 'Worth widening.',
+            lra_v_si: 'At {km} km you gain {e} € more for {m} extra minutes.',
+            lra_v_dipende: 'Your call.',
+            lra_v_forse: 'At {km} km you gain {e} € more, but it costs you {m} minutes.',
+            lra_v_no: 'Not worth widening.',
+            lra_v_perche_no: 'Beyond that you find nothing better.',
+            lra_v_basta: 'You are already at the best radius.',
+            lra_v_perche_basta: 'Going beyond {km} km adds nothing.',
+            lra_oraria: 'Worth {e} €/hour of your time (threshold used: {s} €/hour, vehicle plus driver).',
+            lra_costo_km: 'every detour km costs {e} €',
+            lra_titolo: 'Is it worth widening?', lra_migliore: 'best', lra_nota: 'Detour there and back, time estimated at 50 km/h. Tap a row to set that radius.',
+            lr_raggio: 'Distance from route (km)',
+            pd_con_carta: 'the card to use here',
+            pd_migliore: 'cheapest of your favourites', pd_al_litro: '€/L more',
+            ps_titolo: 'Stop plan (needs an active route)',
+            ps_bordo: 'Litres on board now',
+            ps_riserva: 'Min. reserve (L)',
+            ps_calcola: 'Calculate the refuelling plan',
+            ps_spiega: 'Each result shows the net saving in euros (difference from the median over the litres, minus the fuel spent on the detour). The plan picks where to stop and how much to refuel along the route without ever dropping below the reserve.',
+            f_sospetti: 'Hide suspicious prices',
+            f_sospetti_nota: 'Excludes prices older than 7 days or clearly wrong; merely doubtful ones stay visible but flagged.',
+            f_ordinamento: 'Sort by',
+            f_freschezza: 'Price freshness',
+            f_pannello_srv: 'Open the services panel',
+            mz_tuo: 'Your vehicle',
+            mz_litri: 'Litres to refuel',
+            mz_consumo: 'Consumption (L/100km)',
+            mz_serbatoio: 'Tank (L)',
+            ord_prezzo: 'Cheapest',
+            ord_vicino: 'Nearest',
+            ord_netto: 'Net saving',
+            fr_oggi: 'Today',
+            fr_24: 'Last 24h',
+            fr_48: 'Last 48h',
+            fr_tutti: 'Any',
+            mzo_pers: 'Custom',
             loc_cerca: 'Search city, address or station code', loc_tir: 'HGV access',
             loc_filtri: 'Filters & results', loc_vista_completa: 'Full view',
             loc_vista_mappa: 'Map view', loc_tutte_carte: 'All cards',
             loc_tutti_srv: 'All services', loc_rotta: 'Route',
-            et_prodotto: "Product", et_carta: "Card", et_servizi: "Services",
+            et_mezzo: "VEHICLE", et_prodotto: "Product", et_carta: "Card", et_servizi: "Services",
         });
+        Object.assign(I18N.fr, { loc_scegli: "Choisissez le bon lieu dans la liste" });
+        Object.assign(I18N.fr, { loc_autostrada: "Réseau autoroutier", et_direzione: "SENS" });
+        Object.assign(I18N.fr, { loc_essenziale: "Vue simplifiée", loc_esci_ess: "Retour aux commandes" });
+        Object.assign(I18N.fr, { loc_cond: "Conditions", loc_cond_on: "Conditions appliquées : ce sont vos prix", loc_cond_off: "Conditions non saisies : prix catalogue" });
         Object.assign(I18N.fr, {
+            mzo_utilitaria: 'Citadine',
+            mzo_berlina: 'Berline',
+            mzo_suv: 'SUV / Break',
+            mzo_van: 'Fourgonnette',
+            mzo_furgone: 'Fourgon moyen',
+            mzo_furgonone: 'Grand fourgon',
+            mzo_autocarro: 'Camion léger',
+            mzo_camion: 'Porteur',
+            mzo_truck: 'Semi-remorque',
+            mzo_bus: 'Autocar',
+            lmp_nota: 'Valeurs typiques de la catégorie : modifiez-les si vous connaissez les vôtres.',
+            mz_kml: 'ou km/L',
+            lra_v_conviene: 'Cela vaut la peine.',
+            lra_v_si: 'À {km} km vous gagnez {e} € de plus pour {m} minutes de plus.',
+            lra_v_dipende: 'À vous de voir.',
+            lra_v_forse: 'À {km} km vous gagnez {e} € de plus, mais cela coûte {m} minutes.',
+            lra_v_no: 'Élargir ne vaut pas la peine.',
+            lra_v_perche_no: 'Au-delà, rien de mieux.',
+            lra_v_basta: 'Vous êtes déjà au meilleur rayon.',
+            lra_v_perche_basta: "Aller au-delà de {km} km n'apporte rien.",
+            lra_oraria: 'Cela vaut {e} €/heure de votre temps (seuil : {s} €/heure, véhicule et conducteur).',
+            lra_costo_km: 'chaque km de détour coûte {e} €',
+            lra_titolo: "Vaut-il la peine d'élargir ?", lra_migliore: 'le meilleur', lra_nota: 'Détour aller-retour, temps estimé à 50 km/h. Touchez une ligne pour appliquer ce rayon.',
+            lr_raggio: "Distance de l'itinéraire (km)",
+            pd_con_carta: 'la carte à utiliser ici',
+            pd_migliore: 'le moins cher', pd_al_litro: '€/L de plus',
+            ps_titolo: "Plan d'arrêts (itinéraire requis)",
+            ps_bordo: 'Litres à bord',
+            ps_riserva: 'Réserve min. (L)',
+            ps_calcola: 'Calculer le plan de ravitaillement',
+            ps_spiega: "Chaque résultat affiche l'économie nette en euros (écart à la médiane sur les litres, moins le carburant du détour). Le plan choisit où s'arrêter et combien ravitailler le long de l'itinéraire sans jamais passer sous la réserve.",
+            f_sospetti: 'Masquer les prix suspects',
+            f_sospetti_nota: 'Exclut les prix de plus de 7 jours ou manifestement erronés ; les simples doutes restent visibles mais signalés.',
+            f_ordinamento: 'Trier par',
+            f_freschezza: 'Fraîcheur des prix',
+            f_pannello_srv: 'Ouvrir le panneau services',
+            mz_tuo: 'Votre véhicule',
+            mz_litri: 'Litres à ravitailler',
+            mz_consumo: 'Consommation (L/100km)',
+            mz_serbatoio: 'Réservoir (L)',
+            ord_prezzo: 'Moins cher',
+            ord_vicino: 'Plus proche',
+            ord_netto: 'Économie nette',
+            fr_oggi: "Aujourd'hui",
+            fr_24: '24 dernières h',
+            fr_48: '48 dernières h',
+            fr_tutti: 'Indifférent',
+            mzo_pers: 'Personnalisé',
             loc_cerca: 'Rechercher ville, adresse ou code station', loc_tir: 'Poids lourds',
             loc_filtri: 'Filtres et résultats', loc_vista_completa: 'Vue complète',
             loc_vista_mappa: 'Vue carte', loc_tutte_carte: 'Toutes les cartes',
             loc_tutti_srv: 'Tous les services', loc_rotta: 'Itinéraire',
-            et_prodotto: "Produit", et_carta: "Carte", et_servizi: "Services",
+            et_mezzo: "VÉHICULE", et_prodotto: "Produit", et_carta: "Carte", et_servizi: "Services",
         });
+        Object.assign(I18N.de, { loc_scegli: "Wählen Sie den richtigen Ort aus der Liste" });
+        Object.assign(I18N.de, { loc_autostrada: "Autobahnnetz", et_direzione: "FAHRTRICHTUNG" });
+        Object.assign(I18N.de, { loc_essenziale: "Einfache Ansicht", loc_esci_ess: "Zurück zu den Reglern" });
+        Object.assign(I18N.de, { loc_cond: "Konditionen", loc_cond_on: "Konditionen aktiv: das sind Ihre Preise", loc_cond_off: "Keine Konditionen: Listenpreise" });
         Object.assign(I18N.de, {
+            mzo_utilitaria: 'Kleinwagen',
+            mzo_berlina: 'Limousine',
+            mzo_suv: 'SUV / Kombi',
+            mzo_van: 'Hochdachkombi',
+            mzo_furgone: 'Mittlerer Transporter',
+            mzo_furgonone: 'Großer Transporter',
+            mzo_autocarro: 'Leicht-Lkw',
+            mzo_camion: 'Motorwagen',
+            mzo_truck: 'Sattelzug',
+            mzo_bus: 'Reisebus',
+            lmp_nota: 'Typische Werte der Kategorie: ändern Sie sie, wenn Sie Ihre kennen.',
+            mz_kml: 'oder km/L',
+            lra_v_conviene: 'Es lohnt sich.',
+            lra_v_si: 'Bei {km} km gewinnen Sie {e} € mehr für {m} Minuten mehr.',
+            lra_v_dipende: 'Ihre Entscheidung.',
+            lra_v_forse: 'Bei {km} km gewinnen Sie {e} € mehr, kostet aber {m} Minuten.',
+            lra_v_no: 'Erweitern lohnt sich nicht.',
+            lra_v_perche_no: 'Darüber hinaus finden Sie nichts Besseres.',
+            lra_v_basta: 'Sie sind bereits beim besten Radius.',
+            lra_v_perche_basta: 'Über {km} km hinaus bringt nichts.',
+            lra_oraria: 'Entspricht {e} €/Stunde Ihrer Zeit (Schwelle: {s} €/Stunde, Fahrzeug und Fahrer).',
+            lra_costo_km: 'jeder Umweg-km kostet {e} €',
+            lra_titolo: 'Lohnt sich mehr Umkreis?', lra_migliore: 'am besten', lra_nota: 'Umweg hin und zurück, Zeit geschätzt bei 50 km/h. Zeile antippen, um diesen Radius zu setzen.',
+            lr_raggio: 'Abstand zur Route (km)',
+            pd_con_carta: 'die hier günstigste Karte',
+            pd_migliore: 'der günstigste', pd_al_litro: '€/L mehr',
+            ps_titolo: 'Stoppplan (Route erforderlich)',
+            ps_bordo: 'Liter an Bord',
+            ps_riserva: 'Mindestreserve (L)',
+            ps_calcola: 'Tankplan berechnen',
+            ps_spiega: 'Jedes Ergebnis zeigt die Nettoersparnis in Euro (Abweichung vom Median auf die Liter, abzüglich Kraftstoff für den Umweg). Der Plan wählt, wo gehalten und wie viel getankt wird, ohne je unter die Reserve zu fallen.',
+            f_sospetti: 'Verdächtige Preise ausblenden',
+            f_sospetti_nota: 'Schließt Preise älter als 7 Tage oder offensichtlich falsche aus; nur zweifelhafte bleiben sichtbar, aber markiert.',
+            f_ordinamento: 'Sortieren nach',
+            f_freschezza: 'Preisaktualität',
+            f_pannello_srv: 'Service-Panel öffnen',
+            mz_tuo: 'Ihr Fahrzeug',
+            mz_litri: 'Zu tankende Liter',
+            mz_consumo: 'Verbrauch (L/100km)',
+            mz_serbatoio: 'Tank (L)',
+            ord_prezzo: 'Günstigster',
+            ord_vicino: 'Nächster',
+            ord_netto: 'Nettoersparnis',
+            fr_oggi: 'Heute',
+            fr_24: 'Letzte 24 Std.',
+            fr_48: 'Letzte 48 Std.',
+            fr_tutti: 'Beliebig',
+            mzo_pers: 'Benutzerdefiniert',
             loc_cerca: 'Ort, Adresse oder Stationscode suchen', loc_tir: 'Lkw-geeignet',
             loc_filtri: 'Filter & Ergebnisse', loc_vista_completa: 'Vollansicht',
             loc_vista_mappa: 'Kartenansicht', loc_tutte_carte: 'Alle Karten',
             loc_tutti_srv: 'Alle Services', loc_rotta: 'Route',
-            et_prodotto: "Produkt", et_carta: "Karte", et_servizi: "Services",
+            et_mezzo: "FAHRZEUG", et_prodotto: "Produkt", et_carta: "Karte", et_servizi: "Services",
         });
+        Object.assign(I18N.pt, { loc_scegli: "Escolhe o lugar certo na lista" });
+        Object.assign(I18N.pt, { loc_autostrada: "Rede de autoestradas", et_direzione: "SENTIDO" });
+        Object.assign(I18N.pt, { loc_essenziale: "Vista simples", loc_esci_ess: "Voltar aos comandos" });
+        Object.assign(I18N.pt, { loc_cond: "Condições", loc_cond_on: "Condições ativas: estes são os teus preços", loc_cond_off: "Sem condições: preços de tabela" });
         Object.assign(I18N.pt, {
+            mzo_utilitaria: 'Utilitário',
+            mzo_berlina: 'Berlina',
+            mzo_suv: 'SUV / Carrinha',
+            mzo_van: 'Furgoneta ligeira',
+            mzo_furgone: 'Furgão médio',
+            mzo_furgonone: 'Furgão grande',
+            mzo_autocarro: 'Camião ligeiro',
+            mzo_camion: 'Camião rígido',
+            mzo_truck: 'Camião articulado',
+            mzo_bus: 'Autocarro',
+            lmp_nota: 'Valores típicos da categoria: altere-os se souber os seus.',
+            mz_kml: 'ou km/L',
+            lra_v_conviene: 'Vale a pena alargar.',
+            lra_v_si: 'A {km} km ganha {e} € a mais por {m} minutos a mais.',
+            lra_v_dipende: 'Decide você.',
+            lra_v_forse: 'A {km} km ganha {e} € a mais, mas custa {m} minutos.',
+            lra_v_no: 'Não vale a pena alargar.',
+            lra_v_perche_no: 'Para além disso não encontra nada melhor.',
+            lra_v_basta: 'Já está no melhor raio.',
+            lra_v_perche_basta: 'Passar dos {km} km não acrescenta nada.',
+            lra_oraria: 'Vale {e} €/hora do seu tempo (limiar: {s} €/hora, veículo e condutor).',
+            lra_costo_km: 'cada km de desvio custa {e} €',
+            lra_titolo: 'Vale a pena alargar?', lra_migliore: 'o melhor', lra_nota: 'Desvio ida e volta, tempo estimado a 50 km/h. Toque numa linha para aplicar esse raio.',
+            lr_raggio: 'Distância da rota (km)',
+            pd_con_carta: 'o cartão a usar aqui',
+            pd_migliore: 'o mais barato', pd_al_litro: '€/L a mais',
+            ps_titolo: 'Plano de paragens (precisa de uma rota)',
+            ps_bordo: 'Litros a bordo',
+            ps_riserva: 'Reserva mín. (L)',
+            ps_calcola: 'Calcular o plano de abastecimento',
+            ps_spiega: 'Cada resultado mostra a poupança líquida em euros (diferença face à mediana sobre os litros, menos o combustível do desvio). O plano escolhe onde parar e quanto abastecer ao longo da rota sem nunca descer abaixo da reserva.',
+            f_sospetti: 'Ocultar preços suspeitos',
+            f_sospetti_nota: 'Exclui preços com mais de 7 dias ou claramente errados; os apenas duvidosos ficam visíveis mas assinalados.',
+            f_ordinamento: 'Ordenar por',
+            f_freschezza: 'Atualidade do preço',
+            f_pannello_srv: 'Abrir o painel de serviços',
+            mz_tuo: 'O seu veículo',
+            mz_litri: 'Litros a abastecer',
+            mz_consumo: 'Consumo (L/100km)',
+            mz_serbatoio: 'Depósito (L)',
+            ord_prezzo: 'Mais barato',
+            ord_vicino: 'Mais próximo',
+            ord_netto: 'Poupança líquida',
+            fr_oggi: 'Hoje',
+            fr_24: 'Últimas 24 h',
+            fr_48: 'Últimas 48 h',
+            fr_tutti: 'Qualquer',
+            mzo_pers: 'Personalizado',
             loc_cerca: "Procurar cidade, morada ou código do posto",
             loc_tir: "Pesados",
             loc_filtri: "Filtros e resultados",
@@ -8972,9 +9992,61 @@ body.theme-dark .leaflet-control-attribution { background: rgba(15,20,32,.82) !i
             loc_tutte_carte: "Todos os cartões",
             loc_tutti_srv: "Todos os serviços",
             loc_rotta: "Percurso",
-            et_prodotto: "Produto", et_carta: "Cartão", et_servizi: "Serviços",
+            et_mezzo: "VEÍCULO", et_prodotto: "Produto", et_carta: "Cartão", et_servizi: "Serviços",
         });
+        Object.assign(I18N.es, { loc_scegli: "Elige el lugar correcto de la lista" });
+        Object.assign(I18N.es, { loc_autostrada: "Red de autopistas", et_direzione: "SENTIDO" });
+        Object.assign(I18N.es, { loc_essenziale: "Vista esencial", loc_esci_ess: "Volver a los controles" });
+        Object.assign(I18N.es, { loc_cond: "Condiciones", loc_cond_on: "Condiciones activas: estos son tus precios", loc_cond_off: "Sin condiciones: precios de tarifa" });
         Object.assign(I18N.es, {
+            mzo_utilitaria: 'Utilitario',
+            mzo_berlina: 'Berlina',
+            mzo_suv: 'SUV / Familiar',
+            mzo_van: 'Furgoneta ligera',
+            mzo_furgone: 'Furgón medio',
+            mzo_furgonone: 'Furgón grande',
+            mzo_autocarro: 'Camión ligero',
+            mzo_camion: 'Rígido',
+            mzo_truck: 'Tráiler',
+            mzo_bus: 'Autocar',
+            lmp_nota: 'Valores típicos de la categoría: cámbialos si conoces los tuyos.',
+            mz_kml: 'o km/L',
+            lra_v_conviene: 'Merece la pena ampliar.',
+            lra_v_si: 'A {km} km ganas {e} € más por {m} minutos más.',
+            lra_v_dipende: 'Tú decides.',
+            lra_v_forse: 'A {km} km ganas {e} € más, pero te cuesta {m} minutos.',
+            lra_v_no: 'No merece la pena ampliar.',
+            lra_v_perche_no: 'Más allá no encuentras nada mejor.',
+            lra_v_basta: 'Ya estás en el mejor radio.',
+            lra_v_perche_basta: 'Pasar de {km} km no añade nada.',
+            lra_oraria: 'Equivale a {e} €/hora de tu tiempo (umbral: {s} €/hora, vehículo y conductor).',
+            lra_costo_km: 'cada km de desvío cuesta {e} €',
+            lra_titolo: '¿Conviene ampliar?', lra_migliore: 'el mejor', lra_nota: 'Desvío ida y vuelta, tiempo estimado a 50 km/h. Toca una fila para aplicar ese radio.',
+            lr_raggio: 'Distancia de la ruta (km)',
+            pd_con_carta: 'la tarjeta que conviene aquí',
+            pd_migliore: 'el más barato', pd_al_litro: '€/L más',
+            ps_titolo: 'Plan de paradas (requiere una ruta)',
+            ps_bordo: 'Litros a bordo',
+            ps_riserva: 'Reserva mín. (L)',
+            ps_calcola: 'Calcular el plan de repostaje',
+            ps_spiega: 'Cada resultado muestra el ahorro neto en euros (diferencia respecto a la mediana sobre los litros, menos el combustible del desvío). El plan elige dónde parar y cuánto repostar a lo largo de la ruta sin bajar nunca de la reserva.',
+            f_sospetti: 'Ocultar precios sospechosos',
+            f_sospetti_nota: 'Excluye precios de más de 7 días o claramente erróneos; los solo dudosos siguen visibles pero señalados.',
+            f_ordinamento: 'Ordenar por',
+            f_freschezza: 'Actualidad del precio',
+            f_pannello_srv: 'Abrir el panel de servicios',
+            mz_tuo: 'Tu vehículo',
+            mz_litri: 'Litros a repostar',
+            mz_consumo: 'Consumo (L/100km)',
+            mz_serbatoio: 'Depósito (L)',
+            ord_prezzo: 'Más barato',
+            ord_vicino: 'Más cercano',
+            ord_netto: 'Ahorro neto',
+            fr_oggi: 'Hoy',
+            fr_24: 'Últimas 24 h',
+            fr_48: 'Últimas 48 h',
+            fr_tutti: 'Cualquiera',
+            mzo_pers: 'Personalizado',
             loc_cerca: "Busca ciudad, dirección o código EESS",
             loc_tir: "Vehículos pesados",
             loc_filtri: "Filtros y resultados",
@@ -8983,7 +10055,7 @@ body.theme-dark .leaflet-control-attribution { background: rgba(15,20,32,.82) !i
             loc_tutte_carte: "Todas las tarjetas",
             loc_tutti_srv: "Todos los servicios",
             loc_rotta: "Ruta",
-            et_prodotto: "Producto", et_carta: "Tarjeta", et_servizi: "Servicios",
+            et_mezzo: "VEHÍCULO", et_prodotto: "Producto", et_carta: "Tarjeta", et_servizi: "Servicios",
         });
 
         function vistaAttuale() {
@@ -8994,22 +10066,49 @@ body.theme-dark .leaflet-control-attribution { background: rgba(15,20,32,.82) !i
         }
 
         function vistaApplica() {
-            var loc = vistaAttuale() === 'locator';
+            var v = vistaAttuale();
+            var ess = v === 'essenziale';
+            var loc = v === 'locator' || ess;   // l'essenziale e' un locator spogliato
             if (!loc) { try { locRottaChiudi(true); } catch (e) {} }
             document.body.classList.toggle('vista-locator', loc);
+            document.body.classList.toggle('vista-essenziale', ess);
             var giusto = loc !== document.body.classList.contains('side-collapsed');
             if (giusto) toggleSidebar();          // locator = pannello chiuso, completa = aperto
             var b = document.getElementById('btnVista');
             if (b) b.textContent = t(loc ? 'loc_vista_completa' : 'loc_vista_mappa');
+            var e = document.getElementById('btnEssenziale');
+            if (e) {
+                e.textContent = t(ess ? 'loc_esci_ess' : 'loc_essenziale');
+                e.classList.toggle('on', ess);
+            }
         }
 
         function vistaCambia() {
-            vistaSalva(vistaAttuale() === 'locator' ? 'completa' : 'locator');
+            // dall'essenziale si torna sempre alla mappa completa di comandi:
+            // uscire in "vista completa" col pannello aperto sarebbe un salto
+            // troppo largo per chi ha appena chiesto meno roba sullo schermo
+            var v = vistaAttuale();
+            vistaSalva(v === 'completa' ? 'locator' : (v === 'essenziale' ? 'locator' : 'completa'));
             vistaApplica();
         }
 
+        /* ═════════ VISTA ESSENZIALE ═════════
+           Un pulsante, e sullo schermo restano cinque cose: indirizzo,
+           percorso, carta, tipo di mezzo, mezzi pesanti. Piu' la mappa.
+           Tutto il resto - prodotto, servizi, KPI, classifica, pannelli -
+           sparisce dalla vista ma NON viene spento: i filtri conservano il
+           loro valore, e tornando indietro si ritrova tutto com'era.
+           Richiesta di Davide (12/08/2026): "una vista super semplificata
+           che faccia una cosa eccelsa". */
+        function vistaEssenziale() {
+            vistaSalva(vistaAttuale() === 'essenziale' ? 'locator' : 'essenziale');
+            vistaApplica();
+            try { render(); } catch (e) {}
+        }
+
         function locChipSync() {
-            [['fuel', 'locChipFuel'], ['payFilter', 'locChipPay'], ['srvFilter', 'locChipSrv']]
+            [['fuel', 'locChipFuel'], ['mezzoTipo', 'locChipMezzo'],
+             ['payFilter', 'locChipPay'], ['srvFilter', 'locChipSrv']]
                 .forEach(function (c) {
                     var vero = document.getElementById(c[0]);
                     var chip = document.getElementById(c[1]);
@@ -9018,6 +10117,65 @@ body.theme-dark .leaflet-control-attribution { background: rgba(15,20,32,.82) !i
             var tir = document.getElementById('soloTruck');
             var bt = document.getElementById('locChipTir');
             if (tir && bt) bt.classList.toggle('on', tir.checked);
+        }
+
+        // Scorciatoia alle condizioni commerciali: apre la barra se e' chiusa,
+        // espande la sezione se e' ripiegata, poi la porta sotto gli occhi.
+        // Le tre cose insieme, perche' saltarne una lascia l'utente davanti a
+        // un titolo chiuso o a una barra che non si e' mossa.
+        function locVaiCondizioni() {
+            var sez = document.getElementById('secCondizioni');
+            if (!sez) return;
+            // sezione ancora spenta (avvio non completato): la si inizializza
+            // qui invece di far cadere il clic nel vuoto. Se dopo il tentativo
+            // resta spenta, in questo portale non ci sono regole carta: allora
+            // il nulla e' la risposta giusta, ma il pulsante non dovrebbe
+            // nemmeno vedersi.
+            if (getComputedStyle(sez).display === 'none') {
+                try { if (typeof condInit === 'function') condInit(); } catch (e) {}
+                if (getComputedStyle(sez).display === 'none') return;
+            }
+            // lo stato va letto PRIMA di cambiarlo: leggerlo dopo dava sempre
+            // il ritardo corto, e lo scroll partiva con la barra ancora in
+            // transizione, che lo cancellava
+            var eraChiusa = document.body.classList.contains('side-collapsed');
+            if (eraChiusa) toggleSidebar();
+            sez.classList.remove('collapsed');
+            setTimeout(function () {
+                // scroll secco, non smooth: su un contenitore appena animato lo
+                // smooth viene interrotto e la sezione resta fuori schermo
+                sez.scrollIntoView({ block: 'start' });
+                // lampeggio breve: dopo uno scorrimento lungo bisogna sapere
+                // quale delle sezioni e' quella che si cercava
+                sez.classList.add('sez-evidenzia');
+                setTimeout(function () { sez.classList.remove('sez-evidenzia'); }, 1600);
+            }, eraChiusa ? 420 : 60);
+        }
+
+        // Il pulsante esiste solo dove ci sono regole carta, e si accende
+        // quando le condizioni sono compilate.
+        function locCondSync() {
+            var sez = document.getElementById('secCondizioni');
+            var ci = !!sez && getComputedStyle(sez).display !== 'none';
+            var on = false;
+            try { on = (typeof condAttive === 'function') && condAttive(); } catch (e) {}
+            // due pulsanti, uno per vista: quello della barra locator sparisce
+            // con la barra in vista completa, quindi la scorciatoia vive anche
+            // nell'intestazione
+            ['locChipCond', 'hdrChipCond'].forEach(function (id) {
+                var b = document.getElementById(id);
+                if (!b) return;
+                // niente attributo hidden: .btn-guide{display:inline-flex} lo
+                // scavalca e il pulsante restava visibile ma VUOTO - il
+                // "pulsante che non si capisce cosa e'" visto da Davide.
+                // style.display inline vince su qualunque classe.
+                b.style.display = ci ? '' : 'none';
+                // l'etichetta si scrive comunque: se l'ordine d'avvio cambia
+                // ancora, al peggio si vede un pulsante parlante, mai uno muto
+                b.classList.toggle('on', !!on);
+                b.textContent = '€ ' + t('loc_cond');
+                b.title = on ? t('loc_cond_on') : t('loc_cond_off');
+            });
         }
 
         function locProxy(chipId, veroId, etichettaTutti) {
@@ -9029,8 +10187,40 @@ body.theme-dark .leaflet-control-attribution { background: rgba(15,20,32,.82) !i
                 chip.options[0].text = etichettaTutti;   // 'Tutti' da solo non dice di cosa
             }
             chip.value = vero.value;
-            chip.onchange = function () { vero.value = chip.value; render(); };
+            chip.onchange = function () {
+                vero.value = chip.value;
+                // Il menu vero puo' avere una sua logica agganciata: il tipo di
+                // mezzo, per esempio, riempie litri, consumo e serbatoio. Scrivere
+                // il valore NON la esegue — scegliendo "Van" dalla barra restavano
+                // i 400 L del camion, e il piano soste li usava. Va richiamata.
+                if (typeof vero.onchange === 'function') vero.onchange();
+                else render();
+            };
             vero.addEventListener('change', locChipSync);
+        }
+
+        // Il raggio del pannello percorso pilota il cursore della barra laterale.
+        // Toccandolo si esce da "tutto il Paese": chiedere un corridoio di 15 km
+        // e vedere l'Italia intera sarebbe una risposta a un'altra domanda.
+        function locRaggioCollega() {
+            var mio = document.getElementById('locRaggio');
+            var vero = document.getElementById('radius');
+            var nat = document.getElementById('tuttaItalia');
+            var val = document.getElementById('locRaggioVal');
+            if (!mio || !vero) return;
+            mio.value = vero.value; if (val) val.textContent = vero.value;
+            mio.oninput = function () {
+                if (nat && nat.checked) { nat.checked = false; if (typeof toggleRadius === 'function') toggleRadius(); }
+                vero.value = mio.value;
+                var vv = document.getElementById('radiusVal');
+                if (vv) vv.innerText = mio.value;
+                if (val) val.textContent = mio.value;
+                if (typeof renderDebounced === 'function') renderDebounced(); else render();
+            };
+            // se il raggio cambia dalla barra laterale, questo lo segue
+            vero.addEventListener('input', function () {
+                mio.value = vero.value; if (val) val.textContent = vero.value;
+            });
         }
 
         function locEtichette() {
@@ -9043,6 +10233,19 @@ body.theme-dark .leaflet-control-attribution { background: rgba(15,20,32,.82) !i
             // sono carte, prodotti o servizi.
             var ef = document.getElementById('locEtaFuel');
             if (ef) ef.textContent = t('et_prodotto');
+            var em = document.getElementById('locEtaMezzo');
+            if (em) em.textContent = t('et_mezzo');
+            var ed = document.getElementById('locEtaDir');
+            if (ed) ed.textContent = t('et_direzione');
+            try { locAutoSync(); } catch (e) {}
+            var er = document.getElementById('locRaggioEta');
+            if (er) er.textContent = t('lr_raggio');
+            [['lmpEtaTank','mz_serbatoio'], ['lmpEtaLitri','mz_litri'],
+             ['lmpEtaL100','mz_consumo'], ['lmpEtaKmL','mz_kml'],
+             ['lmpNota','lmp_nota']].forEach(function (x) {
+                var el = document.getElementById(x[0]);
+                if (el) el.textContent = t(x[1]);
+            });
             var ep = document.getElementById('locEtaPay');
             if (ep) ep.textContent = t('et_carta');
             var es = document.getElementById('locEtaSrv');
@@ -9059,19 +10262,102 @@ body.theme-dark .leaflet-control-attribution { background: rgba(15,20,32,.82) !i
             if (br) br.innerHTML = '<svg class="ic ic-sm"><use href="#i-route"/></svg> ' + t('loc_rotta');
         }
 
+        /* ═══════ RICERCA IN BARRA: SI SCEGLIE, NON SI INDOVINA ═══════
+           Prima questa funzione chiedeva UN solo risultato e lo prendeva senza
+           mostrarlo: con gli omonimi (tre "Rimini", due "Bari") e con gli
+           indirizzi finivi altrove senza sapere perche'. La barra laterale la
+           tendina ce l'aveva; qui no. Segnalato da Davide il 12/08/2026.
+           Ora: si digita, compaiono i suggerimenti con tanto di natura del
+           posto (citta', via, stazione), si sceglie con mouse o frecce. */
+        var LOC_SUG = [], LOC_SUG_I = -1, LOC_SUG_T = null;
+
+        function locSugChiudi() {
+            var box = document.getElementById('locSug');
+            if (box) { box.style.display = 'none'; box.innerHTML = ''; }
+            LOC_SUG = []; LOC_SUG_I = -1;
+        }
+
+        function locSugDisegna() {
+            var box = document.getElementById('locSug');
+            if (!box) return;
+            if (!LOC_SUG.length) { locSugChiudi(); return; }
+            box.innerHTML = LOC_SUG.map(function (l, i) {
+                return '<li class="loc-sug-r' + (i === LOC_SUG_I ? ' sel' : '') + '"' +
+                    ' onmousedown="event.preventDefault();locSugScegli(' + i + ')">' +
+                    '<span class="lsr-n">' + esc(l.nome) + '</span>' +
+                    '<span class="lsr-d">' + esc(etichettaLuogo(l)) + '</span></li>';
+            }).join('');
+            box.style.display = 'block';
+        }
+
+        function locSugScegli(i) {
+            var l = LOC_SUG[i];
+            if (!l) return;
+            var campo = document.getElementById('locCerca');
+            if (campo) { campo.value = l.nome + ', ' + etichettaLuogo(l); campo.blur(); }
+            locSugChiudi();
+            qsScegli(l.nome + ', ' + etichettaLuogo(l), l.lat, l.lng);
+        }
+
+        function locSugCerca() {
+            var campo = document.getElementById('locCerca');
+            var q = (campo && campo.value || '').trim();
+            clearTimeout(LOC_SUG_T);
+            if (q.length < 3) { locSugChiudi(); return; }
+            // mezzo secondo di respiro: senza, ogni tasto e' una chiamata ai
+            // servizi di geocodifica e la tendina lampeggia
+            LOC_SUG_T = setTimeout(async function () {
+                try {
+                    var luoghi = await cercaLuoghi(q, 6);
+                    // la risposta lenta di una query vecchia non deve
+                    // sovrascrivere quella della parola che si sta scrivendo
+                    if ((document.getElementById('locCerca') || {}).value.trim() !== q) return;
+                    LOC_SUG = luoghi; LOC_SUG_I = -1;
+                    locSugDisegna();
+                } catch (e) { locSugChiudi(); }
+            }, 500);
+        }
+
+        function locSugTasti(ev) {
+            if (ev.key === 'ArrowDown' || ev.key === 'ArrowUp') {
+                if (!LOC_SUG.length) return;
+                ev.preventDefault();
+                LOC_SUG_I += (ev.key === 'ArrowDown' ? 1 : -1);
+                if (LOC_SUG_I < 0) LOC_SUG_I = LOC_SUG.length - 1;
+                if (LOC_SUG_I >= LOC_SUG.length) LOC_SUG_I = 0;
+                locSugDisegna();
+            } else if (ev.key === 'Enter') {
+                // Invio su una voce evidenziata la sceglie; Invio "secco"
+                // cerca comunque, come prima
+                if (LOC_SUG_I >= 0) { ev.preventDefault(); locSugScegli(LOC_SUG_I); }
+                else locCercaVai();
+            } else if (ev.key === 'Escape') {
+                locSugChiudi();
+            }
+        }
+
         async function locCercaVai() {
             var campo = document.getElementById('locCerca');
             var q = (campo && campo.value || '').trim();
             if (q.length < 2) return;
+            locSugChiudi();
             showLoader(t('ric_percorso'));
             try {
-                var luoghi = await cercaLuoghi(q, 1);
-                if (luoghi.length) {
-                    var l = luoghi[0];
+                // Si chiedono comunque piu' candidati: se il primo non e' una
+                // corrispondenza netta la tendina si apre invece di portare
+                // l'utente in un posto a caso.
+                var luoghi = await cercaLuoghi(q, 6);
+                if (!luoghi.length) { notifica(t('ind_ko')); return; }
+                var l = luoghi[0];
+                var netto = luoghi.length === 1 ||
+                    l.nome.toLowerCase() === q.toLowerCase() ||
+                    (l.cat === 'via' && /\d/.test(q));
+                if (netto) {
                     qsScegli(l.nome + ', ' + etichettaLuogo(l), l.lat, l.lng);
                     campo.blur();
                 } else {
-                    notifica(t('ind_ko'));
+                    LOC_SUG = luoghi; LOC_SUG_I = 0; locSugDisegna();
+                    notifica(t('loc_scegli'));
                 }
             } catch (e) { notifica(t('ric_ko')); }
             finally { hideLoader(); }
@@ -9129,6 +10415,32 @@ body.theme-dark .leaflet-control-attribution { background: rgba(15,20,32,.82) !i
             locChipSync(); render();
         }
 
+        // Rete autostradale: accende il filtro vero (#soloAutostrada) e con lui
+        // fa comparire la direzione. Spegnendolo la direzione torna a "tutte" -
+        // ci pensa toggleDirezione() - e sparisce: un menu direzione senza
+        // autostrada filtrerebbe su un dato che quasi nessun impianto urbano ha.
+        function locAuto() {
+            var a = document.getElementById('soloAutostrada');
+            if (!a) return;
+            a.checked = !a.checked;
+            try { toggleDirezione(); } catch (e) {}
+            locAutoSync();
+            render();
+        }
+        function locAutoSync() {
+            var a = document.getElementById('soloAutostrada');
+            var b = document.getElementById('locChipAuto');
+            var campo = document.getElementById('locCampoDir');
+            if (!a || !b) return;
+            var on = a.checked;
+            b.classList.toggle('on', on);
+            b.textContent = t('loc_autostrada');
+            if (campo) campo.hidden = !on;
+            var vero = document.getElementById('dirFilter');
+            var chip = document.getElementById('locChipDir');
+            if (vero && chip && chip.value !== vero.value) chip.value = vero.value;
+        }
+
         (function locAvvio() {
             var css = document.createElement('style');
             css.textContent =
@@ -9141,11 +10453,118 @@ body.theme-dark .leaflet-control-attribution { background: rgba(15,20,32,.82) !i
                 '.loc-chip{appearance:none;-webkit-appearance:none;background:var(--surface,#fff) url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%2710%27 height=%276%27%3E%3Cpath d=%27M1 1l4 4 4-4%27 stroke=%27%235b6b7c%27 stroke-width=%271.6%27 fill=%27none%27/%3E%3C/svg%3E") no-repeat right 12px center;color:var(--on-surface,#1c2b3a);border:1px solid rgba(120,140,160,.25);border-radius:21px;padding:10px 30px 10px 14px;font:600 12.5px/1 inherit;cursor:pointer;box-shadow:0 6px 20px rgba(10,30,50,.14);max-width:190px;text-overflow:ellipsis}' +
                 '.loc-btn{background:var(--surface,#fff);color:var(--on-surface,#1c2b3a);border:1px solid rgba(120,140,160,.25);border-radius:21px;padding:10px 14px;font:600 12.5px/1 inherit;cursor:pointer;box-shadow:0 6px 20px rgba(10,30,50,.14)}' +
                 '.loc-btn.on{background:#0F2A43;color:#fff;border-color:#0F2A43}' +
+                // tendina dei suggerimenti: la pastiglia diventa il suo
+                // riferimento, cosi' la lista sta incollata sotto al campo
+                '#locPill{position:relative}' +
+                '.loc-sug{display:none;position:absolute;top:calc(100% + 6px);left:0;right:0;' +
+                'margin:0;padding:4px;list-style:none;background:var(--surface-lowest,#fff);' +
+                'border:1px solid rgba(120,140,160,.28);border-radius:12px;' +
+                'box-shadow:0 16px 44px rgba(10,30,50,.26);z-index:1100;max-height:320px;' +
+                'overflow-y:auto}' +
+                '.loc-sug-r{display:flex;flex-direction:column;gap:1px;padding:8px 10px;' +
+                'border-radius:8px;cursor:pointer}' +
+                '.loc-sug-r:hover,.loc-sug-r.sel{background:var(--secondary-container,#d6e3ff)}' +
+                '.loc-sug-r .lsr-n{font-size:13px;font-weight:700;color:var(--on-surface,#1a1b20)}' +
+                '.loc-sug-r .lsr-d{font-size:11px;color:var(--on-surface-variant,#5b6b7c)}' +
                 'body.vista-locator:not(.side-collapsed) .loc-bar{left:472px;max-width:calc(100vw - 500px)}' +
                 'body.vista-locator #welcome{display:none}' +
                 'body.vista-locator #locRotta{display:none;position:fixed;z-index:1060;top:calc(var(--topbar-h, 62px) + 62px);left:14px;width:400px;max-width:92vw;background:var(--surface,#fff);border:1px solid rgba(120,140,160,.3);border-radius:10px;box-shadow:0 14px 40px rgba(10,30,50,.22);padding:14px}' +
                 'body.vista-locator #locRotta.aperto{display:block}' +
                 '#locRotta .lr-titolo{font-size:10.5px;letter-spacing:.08em;color:var(--on-surface-variant,#5b6b7c);margin-bottom:9px}' +
+                // ═══ VISTA ESSENZIALE ═══
+                // Restano cinque comandi: indirizzo, percorso, carta, mezzo,
+                // mezzi pesanti. Si NASCONDE, non si spegne: i filtri tengono
+                // il valore e tornando indietro c'e' tutto com'era.
+                'body.vista-essenziale #locChipFuel,' +
+                'body.vista-essenziale #locChipSrv{display:none}' +
+                'body.vista-essenziale label.loc-campo:has(#locChipFuel),' +
+                'body.vista-essenziale label.loc-campo:has(#locChipSrv){display:none}' +
+                'body.vista-essenziale #locChipCond,' +
+                'body.vista-essenziale #locBtnFiltri,' +
+                'body.vista-essenziale #hdrChipCond,' +
+                'body.vista-essenziale #btnVista,' +
+                'body.vista-essenziale #btnComponi,' +
+                'body.vista-essenziale #kpiBar,' +
+                'body.vista-essenziale .kpi,' +
+                'body.vista-essenziale #btnPreferitiTop{display:none!important}' +
+                // UNA striscia sola, mai a capo: cinque comandi affiancati su
+                // un unico pannello bianco. Andando a capo si accavallavano
+                // sulla mappa e la "vista semplice" sembrava piu' disordinata
+                // di quella completa.
+                'body.vista-essenziale .loc-bar{gap:6px;flex-wrap:nowrap;left:50%;' +
+                'transform:translateX(-50%);max-width:min(1100px,calc(100vw - 28px));' +
+                'background:var(--surface-lowest,#fff);border-radius:16px;padding:8px;' +
+                'box-shadow:0 10px 34px rgba(10,30,50,.20);align-items:stretch}' +
+                'body.vista-essenziale:not(.side-collapsed) .loc-bar{left:50%;max-width:min(1100px,calc(100vw - 28px))}' +
+                // dentro la striscia i comandi non hanno ombra propria: e' il
+                // pannello a fare da contenitore
+                'body.vista-essenziale .loc-bar > *{box-shadow:none}' +
+                // il campo indirizzo non si lascia schiacciare dagli altri:
+                // con la colonna dei risultati a destra si era ridotto a
+                // "Cerca citt" e non si capiva piu' a cosa servisse
+                'body.vista-essenziale .loc-pill{min-width:250px;flex:1 1 250px;box-shadow:none;' +
+                'border:1px solid rgba(120,140,160,.22)}' +
+                'body.vista-essenziale .loc-chip{font-size:13.5px;padding:11px 30px 11px 12px}' +
+                'body.vista-essenziale .loc-btn{font-size:13.5px;padding:12px 16px;white-space:nowrap}' +
+                'body.vista-essenziale .loc-campo{flex:0 0 auto}' +
+                // sotto i 1100px i due menu si stringono invece di sparire
+                '@media (max-width:1100px){' +
+                'body.vista-essenziale .loc-chip{font-size:12.5px;padding:10px 26px 10px 9px;max-width:150px}' +
+                'body.vista-essenziale .loc-btn{font-size:12px;padding:10px 11px}}' +
+                // ═══ LA LISTA, A SINISTRA E SCORREVOLE ═══
+                // Nascondere l'intero pannello toglieva anche i risultati,
+                // cioe' la risposta. Il pannello resta al suo posto - A
+                // SINISTRA, dove sta da sempre e dove l'occhio lo cerca - e
+                // dentro tiene SOLO la lista. Si riusa la lista di sempre
+                // (prezzi, carta, distanza, Naviga), non una copia ridotta.
+                //
+                // DUE ERRORI DA NON RIFARE, costati un giro a vuoto:
+                //  1. display:block qui spegne il flex del pannello, e senza
+                //     flex .content-area{flex-grow:1} non ha altezza da
+                //     riempire: la lista non scorre piu'. Si tiene FLEX.
+                //  2. e' .content-area (classe), non #content-area: la regola
+                //     scritta con il cancelletto non ha mai fatto nulla.
+                // La barra si apre e si chiude COME SEMPRE, con la sua
+                // maniglia: qui c'era transform:none!important, che le
+                // impediva di scorrere via e la inchiodava aperta.
+                'body.vista-essenziale #sidebar{display:flex;flex-direction:column;' +
+                'left:14px;right:auto;width:396px;max-width:42vw;' +
+                'top:calc(var(--topbar-h, 62px) + 84px);bottom:14px;' +
+                'z-index:1040;overflow:hidden}' +
+                'body.vista-essenziale.side-collapsed #sidebar{transform:translateX(-430px)}' +
+                // dentro sopravvivono solo intestazione e lista
+                'body.vista-essenziale #sidebar .section-card,' +
+                'body.vista-essenziale #sidebar #tappeBox,' +
+                'body.vista-essenziale #sidebar #riepilogoRotta,' +
+                'body.vista-essenziale #sidebar .msel,' +
+                'body.vista-essenziale #sidebar #btnComponi,' +
+                // la striscia statistiche ("1.221 impianti n°1 di zona") e'
+                // materiale da ufficio: qui ruba il primo schermo alla lista
+                'body.vista-essenziale .insights-strip{display:none!important}' +
+                // la colonna che scorre: flex:1 per prendersi lo spazio che
+                // resta sotto l'intestazione, e overflow proprio
+                'body.vista-essenziale #sidebar .content-area{padding:0;flex:1 1 auto;' +
+                'min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;gap:0}' +
+                'body.vista-essenziale #resultsHeader{padding:12px 14px 8px;flex:0 0 auto}' +
+                'body.vista-essenziale #results{padding:0 12px 12px}' +
+                // il riquadro volante del risparmio ripete il dato della prima
+                // scheda: con la lista a sinistra lo si sposta a destra
+                'body.vista-essenziale #floatSavings{left:auto;right:14px}' +
+                // la striscia dei comandi scansa la colonna quando c'e', e si
+                // riprende lo spazio quando la barra e' chiusa
+                'body.vista-essenziale .loc-bar{left:auto;transform:none;' +
+                'margin-left:426px;max-width:calc(100vw - 452px);' +
+                'transition:margin-left .25s ease,max-width .25s ease}' +
+                'body.vista-essenziale.side-collapsed .loc-bar{margin-left:14px;' +
+                'max-width:calc(100vw - 40px)}' +
+                // sotto i 1200px la colonna diventa un cassetto in basso: su
+                // portatile e tablet una colonna da 396px mangerebbe la mappa
+                '@media (max-width:1200px){' +
+                'body.vista-essenziale #sidebar{left:14px;right:14px;width:auto;max-width:none;' +
+                'top:auto;height:40vh}' +
+                'body.vista-essenziale .loc-bar{margin-left:0;left:14px;' +
+                'max-width:calc(100vw - 28px)}' +
+                'body.vista-essenziale #floatSavings{display:none}}' +
                 '}';
             document.head.appendChild(css);
 
@@ -9155,39 +10574,124 @@ body.theme-dark .leaflet-control-attribution { background: rgba(15,20,32,.82) !i
                 '<div class="loc-pill" id="locPill">' +
                 '<svg class="ic ic-sm"><use href="#i-search"/></svg>' +
                 '<input id="locCerca" autocomplete="off" spellcheck="false"' +
-                ' onkeydown="if(event.key===\'Enter\')locCercaVai()"></div>' +
+                ' oninput="locSugCerca()" onkeydown="locSugTasti(event)"' +
+                // la chiusura ritardata lascia passare il clic su una voce:
+                // senza, il blur svuota la tendina un istante prima
+                ' onblur="setTimeout(locSugChiudi,160)">' +
+                '<ul id="locSug" class="loc-sug" role="listbox"></ul></div>' +
                 '<button class="loc-geo" onclick="qsUsaPosizione()" title="Usa la mia posizione" aria-label="Usa la mia posizione"><svg class="ic ic-sm"><use href="#i-locate"/></svg></button>' +
                 '<button class="loc-btn" id="locBtnRotta" onclick="locRottaToggle()" aria-label="Percorso"></button>' +
                 '<label class="loc-campo"><span class="loc-eta" id="locEtaFuel"></span>' +
                 '<select id="locChipFuel" class="loc-chip" aria-label="Carburante"></select></label>' +
+                // Il MEZZO in barra, accanto al prodotto (12/08/2026).
+                // Stava nella sezione 3 della barra laterale, che nasce chiusa:
+                // nessuno lo trovava, e il piano soste girava sui valori di
+                // fabbrica di un mezzo che non era il suo. Non e' una preferenza
+                // sepolta fra le impostazioni: decide dove ti fermi e quanto fai.
+                '<label class="loc-campo"><span class="loc-eta" id="locEtaMezzo"></span>' +
+                '<span class="loc-mezzo-wrap">' +
+                '<select id="locChipMezzo" class="loc-chip" aria-label="Tipo di mezzo"></select>' +
+                '<button type="button" id="locMezzoPar" class="loc-par" aria-haspopup="true"' +
+                ' title="Consumo e serbatoio">&#9881;</button></span></label>' +
                 '<label class="loc-campo"><span class="loc-eta" id="locEtaPay"></span>' +
                 '<select id="locChipPay" class="loc-chip" aria-label="Circuito carta"></select></label>' +
                 '<label class="loc-campo"><span class="loc-eta" id="locEtaSrv"></span>' +
                 '<select id="locChipSrv" class="loc-chip" aria-label="Servizi"></select></label>' +
                 '<button id="locChipTir" class="loc-btn" onclick="locTir()"></button>' +
+                // RETE AUTOSTRADALE + DIREZIONE, in barra (12/08/2026).
+                // Sono due comandi che vanno sempre insieme: "solo autostrada"
+                // da solo restituisce anche l'area di servizio dall'altra
+                // parte della carreggiata, che per chi guida non esiste. La
+                // direzione compare solo quando serve, cioe' ad autostrada
+                // accesa: prima era una riga nascosta nei filtri avanzati.
+                '<button id="locChipAuto" class="loc-btn" onclick="locAuto()"></button>' +
+                '<label class="loc-campo" id="locCampoDir" hidden>' +
+                '<span class="loc-eta" id="locEtaDir"></span>' +
+                '<select id="locChipDir" class="loc-chip" aria-label="Direzione di marcia"></select></label>' +
+                // Le CONDIZIONI stanno a 1.400px dal bordo della barra laterale:
+                // ci si arriva con due schermate di scorrimento, e chi non sa
+                // che esistono non le trova mai. E' la terza sezione che si
+                // perde cosi' (mezzo, parametri, condizioni), percio' qui c'e'
+                // la scorciatoia: apre la barra, espande la sezione e ci porta.
+                // Il pallino segnala che le condizioni sono gia' attive - senza,
+                // non si distingue "listino" da "prezzi miei" senza andarle a
+                // cercare. Compare solo dove le regole carta esistono.
+                '<button id="locChipCond" class="loc-btn" onclick="locVaiCondizioni()" hidden></button>' +
                 '<button class="loc-btn" id="locBtnFiltri" onclick="toggleSidebar()"></button>';
             document.body.appendChild(bar);
 
             var rotta = document.createElement('div');
             rotta.id = 'locRotta';
-            rotta.innerHTML = '<div class="lr-titolo" id="lrTitolo"></div><div id="locRottaHost"></div>';
+            // Il RAGGIO sta col percorso, non fra le opzioni della mappa.
+            //
+            // Quanto ci si puo' allontanare dalla rotta e' parte della domanda
+            // "dove mi fermo": senza, il portale risponde con impianti che
+            // stanno a trenta chilometri dall'uscita. Stava nella barra
+            // laterale insieme allo zoom e ai filtri avanzati, cioe' lontano
+            // dal punto in cui serve. Segnalato da Davide il 12/08/2026.
+            //
+            // Non si sposta il cursore vero: se ne mette uno qui che lo pilota.
+            // Spostare il nodo lo farebbe sparire dalla barra laterale e
+            // romperebbe il ripristino alla chiusura del pannello.
+            rotta.innerHTML = '<div class="lr-titolo" id="lrTitolo"></div>' +
+                '<div id="locRottaHost"></div>' +
+                '<div class="lr-raggio">' +
+                '<label for="locRaggio" id="locRaggioEta"></label>' +
+                '<input type="range" id="locRaggio" min="1" max="50" value="15">' +
+                '<output id="locRaggioVal">15</output>' +
+                '</div>' +
+                '<div class="lr-analisi" id="lrAnalisi" style="display:none"></div>';
+
+            // ── I numeri del mezzo, accanto alla scelta del mezzo ──
+            //
+            // Serbatoio, pieno e consumo stavano nella sezione 3 della barra
+            // laterale. Spostare in barra il solo menu ha risolto meta'
+            // problema: si sceglie l'autoarticolato e poi non si trova dove
+            // dire che ne fa 2,8 di km/L. Qui sono a un clic dal menu, e sono
+            // gli STESSI campi — pilotati, non duplicati.
+            var par = document.createElement('div');
+            par.id = 'locMezzoPan';
+            par.className = 'loc-mezzo-pan';
+            par.innerHTML =
+                '<div class="lmp-tit" id="lmpTit"></div>' +
+                '<div class="lmp-riga"><label for="lmpTank" id="lmpEtaTank"></label>' +
+                '<input type="number" id="lmpTank" min="10" step="10"></div>' +
+                '<div class="lmp-riga"><label for="lmpLitri" id="lmpEtaLitri"></label>' +
+                '<input type="number" id="lmpLitri" min="1" step="10"></div>' +
+                '<div class="lmp-riga"><label for="lmpL100" id="lmpEtaL100"></label>' +
+                '<input type="number" id="lmpL100" min="1" step="0.5"></div>' +
+                '<div class="lmp-riga"><label for="lmpKmL" id="lmpEtaKmL"></label>' +
+                '<input type="number" id="lmpKmL" min="0.5" step="0.1"></div>' +
+                '<div class="lmp-nota" id="lmpNota"></div>';
+            document.body.appendChild(par);
             document.body.appendChild(rotta);
             var bc = document.getElementById('btnCerca');
             if (bc) bc.addEventListener('click', function () {
                 if (document.body.classList.contains('vista-locator') &&
                     document.getElementById('locRotta').classList.contains('aperto')) {
                     locRottaChiudi(true);
+                    // In vista ESSENZIALE il pannello laterale non si apre: e'
+                    // nascosto, quindi aprirlo non mostra nulla e lascia lo
+                    // stato incoerente (uscendo dall'essenziale te lo ritrovi
+                    // spalancato). Li' la risposta e' la mappa, e basta.
+                    if (document.body.classList.contains('vista-essenziale')) return;
                     setTimeout(function () {
                         if (document.body.classList.contains('side-collapsed')) toggleSidebar();
                     }, 700);
                 }
             });
 
+            locRaggioCollega();
+            locMezzoParCollega();
             locProxy('locChipFuel', 'fuel');
+            locProxy('locChipMezzo', 'mezzoTipo');
             locProxy('locChipPay', 'payFilter', t('loc_tutte_carte'));
             locProxy('locChipSrv', 'srvFilter', t('loc_tutti_srv'));
+            locProxy('locChipDir', 'dirFilter');
+            locAutoSync();
             locEtichette();
             locChipSync();
+            locAutoSync();
 
             var componi = document.getElementById('btnComponi');
             if (componi) {
@@ -9195,7 +10699,32 @@ body.theme-dark .leaflet-control-attribution { background: rgba(15,20,32,.82) !i
                 b.className = 'btn-guide'; b.id = 'btnVista';
                 b.onclick = vistaCambia;
                 componi.parentNode.insertBefore(b, componi);
+                // La scorciatoia alle condizioni esiste anche QUI: il pulsante
+                // in barra locator sparisce con la barra stessa in vista
+                // completa, e chi stava li' non lo vedeva - segnalato subito.
+                var bc = document.createElement('button');
+                bc.className = 'btn-guide'; bc.id = 'hdrChipCond';
+                bc.style.display = 'none';
+                bc.onclick = locVaiCondizioni;
+                componi.parentNode.insertBefore(bc, b);
+                // Il pulsante della vista essenziale: primo della fila, perche'
+                // e' quello che serve a chi ha fretta. Resta visibile anche
+                // DENTRO l'essenziale - e' l'unica via d'uscita.
+                var be = document.createElement('button');
+                be.className = 'btn-guide'; be.id = 'btnEssenziale';
+                be.onclick = vistaEssenziale;
+                be.textContent = t('loc_essenziale');
+                componi.parentNode.insertBefore(be, bc);
             }
+            // DOPO la creazione dei pulsanti, mai prima: la prima stesura
+            // sincronizzava un pulsante che ancora non esisteva, e l'etichetta
+            // arrivava solo se condInit ripassava piu' tardi - sul file aperto
+            // dal disco non ripassava, e il pulsante restava muto.
+            locCondSync();
+            // e due ripassi a freddo: se un'eccezione altrove ha saltato il
+            // ripasso di condInit, il pulsante si aggiusta comunque da solo
+            setTimeout(locCondSync, 1500);
+            setTimeout(locCondSync, 4000);
 
             // dopo una ricerca dalla barra rapida, in vista locator la lista
             // dei risultati si apre da sola: e' cosi' che fanno i locator
@@ -9220,6 +10749,257 @@ body.theme-dark .leaflet-control-attribution { background: rgba(15,20,32,.82) !i
             if (lt) lt.textContent = t('loc_rotta').toUpperCase() + ' — ' + t('ph_start') + ' → ' + t('ph_end').split('(')[0].trim();
             if (/rotta=1/.test(location.hash)) locRottaApri();
         })();
+
+        /* ═════════ RAGGIO — quanto conviene allargare ═════════
+           Il cursore diceva quanti chilometri, non se valessero la pena.
+           Qui sotto compare il conto: per ogni raggio, il miglior risparmio
+           NETTO raggiungibile e cosa costa in deviazione e in minuti.
+
+           Il calcolo non e' nuovo, e' quello che il portale gia' fa per ogni
+           impianto (modulo 20):
+               lordo   = (mediana di zona - prezzo) x litri del pieno
+               detour  = km x 2 x consumo/100 x mediana      andata e ritorno
+               netto   = lordo - detour
+           La novita' e' guardarlo come CURVA sul raggio, perche' allargare
+           smette di convenire a un certo punto e quel punto e' diverso ogni
+           volta: dipende da dove sei, da quanto consumi e da quanti litri fai.
+
+           IL TEMPO
+             Stimato a 50 km/h sulla deviazione, andata e ritorno. E' una
+             media prudente per strade secondarie e svincoli: serve a dare
+             l'ordine di grandezza, non a promettere un orario.
+        */
+        var RAGGI = [1, 3, 5, 10, 15, 20, 30, 50];
+        var VEL_DEVIAZIONE = 50;      // km/h
+
+        function raggioCalcola(dentro, oltre) {
+            var c = window.__ctxRaggio || {};
+            if (!c.avgPrice || !c.litri || c.litri <= 0) return null;
+            var tutti = (dentro || []).concat(oltre || []).filter(function (d) {
+                return d.dist_km != null && !d.cur && d.fuels && d.fuels[c.fuel];
+            });
+            if (!tutti.length) return null;
+
+            return RAGGI.map(function (r) {
+                var best = null;
+                for (var i = 0; i < tutti.length; i++) {
+                    var d = tutti[i];
+                    if (d.dist_km > r) continue;
+                    var prezzo = (d.eff && d.eff.p != null) ? d.eff.p : d.fuels[c.fuel].p;
+                    var lordo = (c.avgPrice - prezzo) * c.litri;
+                    var detour = d.dist_km * 2 * (c.consumo / 100) * c.avgPrice;
+                    var netto = lordo - detour;
+                    if (!best || netto > best.netto) {
+                        best = { netto: netto, lordo: lordo, detour: detour,
+                                 km: d.dist_km * 2, prezzo: prezzo, d: d };
+                    }
+                }
+                if (!best) return { r: r, vuoto: true };
+                return { r: r, netto: best.netto, lordo: best.lordo, detour: best.detour,
+                         km: best.km, min: best.km / VEL_DEVIAZIONE * 60,
+                         prezzo: best.prezzo, key: best.d.key };
+            }).filter(function (x) { return !x.vuoto; });
+        }
+
+        function raggioDisegna(dentro, oltre) {
+            var box = document.getElementById('lrAnalisi');
+            if (!box) return;
+            var righe = raggioCalcola(dentro, oltre);
+            if (!righe || righe.length < 2) { box.innerHTML = ''; box.style.display = 'none'; return; }
+
+            var attuale = parseInt((document.getElementById('locRaggio') || {}).value, 10) || 15;
+            var migliore = righe.reduce(function (a, b) { return b.netto > a.netto ? b : a; });
+            // Il raggio della riga piu' vicina a quello impostato: e' li' che
+            // si trova chi guarda, e va detto quale riga lo riguarda.
+            var qui = righe.reduce(function (a, b) {
+                return Math.abs(b.r - attuale) < Math.abs(a.r - attuale) ? b : a;
+            });
+
+            var eur = function (v) { return (v >= 0 ? '+' : '') + v.toFixed(2).replace('.', ',') + ' €'; };
+            box.style.display = 'block';
+            box.innerHTML =
+                '<div class="lra-tit">' + t('lra_titolo') + '</div>' +
+                raggioVerdetto(qui, migliore) +
+                righe.map(function (x) {
+                    var cls = 'lra-riga' + (x === qui ? ' lra-qui' : '') + (x === migliore ? ' lra-top' : '');
+                    return '<div class="' + cls + '" onclick="raggioVai(' + x.r + ')">' +
+                        '<span class="lra-km">' + x.r + ' km</span>' +
+                        '<span class="lra-net">' + eur(x.netto) + '</span>' +
+                        '<span class="lra-cost">' + x.km.toFixed(0) + ' km · ' +
+                            Math.round(x.min) + ' min</span>' +
+                        (x === migliore ? '<span class="lra-badge">' + t('lra_migliore') + '</span>' : '') +
+                        '</div>';
+                }).join('') +
+                '<div class="lra-nota">' + t('lra_nota') + '</div>';
+        }
+
+        // Cliccando una riga il cursore ci si sposta: leggere che a 15 km si
+        // guadagna di piu' e poi doverlo impostare a mano sarebbe una beffa.
+        function raggioVai(r) {
+            var mio = document.getElementById('locRaggio');
+            if (!mio) return;
+            mio.value = r;
+            mio.dispatchEvent(new Event('input', { bubbles: true }));
+        }
+
+        /* ═════════ Chiusura al clic fuori ═════════
+           Un pannello aperto si chiudeva solo ripremendo il bottone che lo
+           aveva aperto. E' il comportamento che nessuno si aspetta: si clicca
+           altrove per uscire, ovunque, da sempre. Segnalato da Davide il
+           12/08/2026 sul pannello Percorso.
+
+           I SERVIZI RESTANO FUORI, e per una ragione buona: li' si spuntano
+           piu' voci di seguito, e chiuderli al primo clic sulla mappa
+           costringerebbe a riaprirli a ogni scelta.
+
+           Non si chiude quando il clic parte da dentro il pannello, dal
+           bottone che lo governa, o dentro un menu a tendina aperto sopra.
+        */
+        (function () {
+            var GOVERNATI = [
+                { pan: 'locRotta', bottoni: '#locBtnRotta, #btnCerca',
+                  chiudi: function () { locRottaChiudi(true); } }
+            ];
+            document.addEventListener('click', function (e) {
+                GOVERNATI.forEach(function (g) {
+                    var p = document.getElementById(g.pan);
+                    if (!p || !p.classList.contains('aperto')) return;
+                    if (p.contains(e.target)) return;
+                    if (g.bottoni && e.target.closest(g.bottoni)) return;
+                    // i suggerimenti dell'autocompletamento vivono fuori dal
+                    // pannello: cliccare una via non deve chiudere la ricerca
+                    if (e.target.closest('.autocomplete-items, .pac-container, .leaflet-popup')) return;
+                    try { g.chiudi(); } catch (err) {}
+                });
+            }, true);
+            // Esc chiude comunque: e' la scorciatoia che si prova per prima
+            document.addEventListener('keydown', function (e) {
+                if (e.key !== 'Escape') return;
+                GOVERNATI.forEach(function (g) {
+                    var p = document.getElementById(g.pan);
+                    if (p && p.classList.contains('aperto')) { try { g.chiudi(); } catch (err) {} }
+                });
+            });
+        })();
+
+
+        /* ═════════ Il verdetto: allargare conviene o no? ═════════
+           La tabella mostra la curva, ma il giudizio lo lasciava a chi legge.
+           Qui si risponde alla domanda vera — "mi conviene allungare?" — e la
+           risposta dipende dal MEZZO: con un autoarticolato a 30 L/100 km ogni
+           chilometro di deviazione costa cinque volte che con un'auto, quindi
+           lo stesso allargamento conviene all'una e non all'altro.
+
+           COME SI DECIDE
+             Si confronta il raggio impostato con quello che rende di piu', e
+             si guarda quanto si guadagna in piu' e quanto tempo costa. Il
+             rapporto fra le due cose e' un compenso orario implicito: guadagnare
+             40 euro in piu' per 17 minuti vale 141 euro l'ora, e a quel punto
+             la risposta e' ovvia. Guadagnarne 3 per venti minuti no.
+
+           IL RIFERIMENTO E' DICHIARATO, NON NASCOSTO
+             La soglia e' 30 euro l'ora, costo indicativo di mezzo piu' autista
+             in Italia. E' scritta a schermo: chi ha un costo diverso legge il
+             compenso orario e decide da se'. Nascondere la soglia dentro una
+             formula avrebbe dato un verdetto che nessuno puo' verificare.
+        */
+        var COSTO_ORA = 30;
+
+        function raggioVerdetto(qui, migliore) {
+            var c = window.__ctxRaggio || {};
+            var mezzo = document.getElementById('mezzoTipo');
+            var nomeMezzo = mezzo && mezzo.selectedIndex >= 0
+                ? mezzo.options[mezzo.selectedIndex].text : '';
+            // quanto costa un chilometro di deviazione con QUESTO mezzo
+            var perKm = (c.consumo && c.avgPrice) ? (c.consumo / 100) * c.avgPrice : 0;
+
+            if (!qui || !migliore || qui.r === migliore.r) {
+                return '<div class="lra-verdetto lra-no">' +
+                    '<b>' + t('lra_v_basta') + '</b> ' +
+                    t('lra_v_perche_basta').replace('{km}', migliore ? migliore.r : '') +
+                    '<div class="lra-mezzo">' + esc(nomeMezzo) + ' · ' +
+                    t('lra_costo_km').replace('{e}', perKm.toFixed(2).replace('.', ',')) + '</div></div>';
+            }
+
+            var dEuro = migliore.netto - qui.netto;
+            var dMin = migliore.min - qui.min;
+            if (dEuro <= 0.5) {
+                return '<div class="lra-verdetto lra-no">' +
+                    '<b>' + t('lra_v_no') + '</b> ' +
+                    t('lra_v_perche_no').replace('{km}', migliore.r) +
+                    '<div class="lra-mezzo">' + esc(nomeMezzo) + ' · ' +
+                    t('lra_costo_km').replace('{e}', perKm.toFixed(2).replace('.', ',')) + '</div></div>';
+            }
+
+            var oraria = dMin > 0.5 ? (dEuro / (dMin / 60)) : null;
+            var conviene = oraria === null || oraria >= COSTO_ORA;
+            var testo = t(conviene ? 'lra_v_si' : 'lra_v_forse')
+                .replace('{km}', migliore.r)
+                .replace('{e}', dEuro.toFixed(2).replace('.', ','))
+                .replace('{m}', Math.round(dMin));
+
+            return '<div class="lra-verdetto ' + (conviene ? 'lra-si' : 'lra-forse') + '">' +
+                '<b>' + t(conviene ? 'lra_v_conviene' : 'lra_v_dipende') + '</b> ' + testo +
+                (oraria !== null
+                    ? '<div class="lra-ora">' + t('lra_oraria')
+                        .replace('{e}', Math.round(oraria))
+                        .replace('{s}', COSTO_ORA) + '</div>'
+                    : '') +
+                '<div class="lra-mezzo">' + esc(nomeMezzo) + ' · ' +
+                t('lra_costo_km').replace('{e}', perKm.toFixed(2).replace('.', ',')) + '</div></div>';
+        }
+
+        /* I quattro numeri del mezzo, pilotati dai campi veri della barra
+           laterale: si scrive qui e cambia la', e viceversa. Nessun dato
+           duplicato, quindi nessun rischio che le due copie divergano. */
+        function locMezzoParCollega() {
+            var btn = document.getElementById('locMezzoPar');
+            var pan = document.getElementById('locMezzoPan');
+            if (!btn || !pan) return;
+
+            var COPPIE = [['lmpTank', 'plnTank'], ['lmpLitri', 'advLitri'],
+                          ['lmpL100', 'advConsumo'], ['lmpKmL', 'mzKmL']];
+            COPPIE.forEach(function (c) {
+                var mio = document.getElementById(c[0]), vero = document.getElementById(c[1]);
+                if (!mio || !vero) return;
+                mio.value = vero.value;
+                mio.addEventListener('input', function () {
+                    vero.value = mio.value;
+                    vero.dispatchEvent(new Event('input', { bubbles: true }));
+                    setTimeout(allinea, 30);   // gli altri campi seguono la conversione
+                });
+                vero.addEventListener('input', function () { mio.value = vero.value; });
+            });
+            function allinea() {
+                COPPIE.forEach(function (c) {
+                    var mio = document.getElementById(c[0]), vero = document.getElementById(c[1]);
+                    if (mio && vero && document.activeElement !== mio) mio.value = vero.value;
+                });
+                var s = document.getElementById('mezzoTipo');
+                var tit = document.getElementById('lmpTit');
+                if (s && tit && s.selectedIndex >= 0) tit.textContent = s.options[s.selectedIndex].text;
+            }
+            var sel = document.getElementById('mezzoTipo');
+            if (sel) sel.addEventListener('change', function () { setTimeout(allinea, 40); });
+
+            btn.onclick = function (e) {
+                e.stopPropagation();
+                var apri = !pan.classList.contains('aperto');
+                if (apri) {
+                    allinea();
+                    var r = btn.getBoundingClientRect();
+                    pan.style.top = (r.bottom + 6) + 'px';
+                    pan.style.left = Math.max(8, Math.min(r.left - 120, window.innerWidth - 250)) + 'px';
+                }
+                pan.classList.toggle('aperto', apri);
+            };
+            document.addEventListener('click', function (e) {
+                if (!pan.classList.contains('aperto')) return;
+                if (pan.contains(e.target) || e.target === btn) return;
+                pan.classList.remove('aperto');
+            }, true);
+            allinea();
+        }
         /* ═════════ 24 · TEMA PRO — la veste enterprise della TEST ═════════
            Lo strumento deve trasmettere fiducia al primo sguardo: barra navy
            istituzionale, bottoni piatti, un solo accento. Nessuna emoji: le
@@ -9824,11 +11604,53 @@ body.theme-dark .leaflet-control-attribution { background: rgba(15,20,32,.82) !i
         Object.assign(I18N.pt, { tp_aggiungi: "+ Adicionar paragem", tp_ph: "Paragem intermédia", tp_su: "Subir", tp_giu: "Descer", tp_togli: "Remover", tp_max: "Máximo {n} paragens.", tp_persi: "Paragens não encontradas e ignoradas: {l}" });
 
 /* Nomi delle famiglie di prodotto (v. modulo 32) */
+        Object.assign(I18N.it, { tag_via: "via", tag_fermata: "fermata", tag_stazione: "stazione", tag_poi: "attività", tag_area: "territorio", rt_fine_lontana: "Il percorso termina a {km} km dalla destinazione indicata: controlla di aver scelto il posto giusto dai suggerimenti." });
+        Object.assign(I18N.it, { pcs_carte: "carte", pcs_migliore: "{n} carte tue qui: questa e' la piu' conveniente" });
+        Object.assign(I18N.it, { srvf_ignoti: "{n} senza informazione (la fonte del loro Paese non censisce questo servizio)" });
+        Object.assign(I18N.it, {
+            srvf_trovati: "{n} impianti con {srv}", srvf_nessuno: "Nessun impianto ha {srv}",
+            srvf_esclusi: "{n} esclusi dal filtro servizi", srvf_almeno: "Basta almeno uno",
+            srvf_tutti: "Chiedili tutti", srvf_togli: "Togli i servizi" });
         Object.assign(I18N.it, { fam_gasolio: "Gasolio", fam_hvo: "HVO", fam_benzina: "Benzina", fam_gpl: "GPL", fam_metano: "Metano", fam_gnl: "GNL", fam_e85: "E85", fam_altro: "Altri prodotti" });
+        Object.assign(I18N.en, { tag_via: "street", tag_fermata: "bus stop", tag_stazione: "station", tag_poi: "business", tag_area: "area", rt_fine_lontana: "The route ends {km} km from the destination you set: check you picked the right place from the suggestions." });
+        Object.assign(I18N.en, { pcs_carte: "cards", pcs_migliore: "{n} of your cards work here: this is the cheapest" });
+        Object.assign(I18N.en, { srvf_ignoti: "{n} with no data (their country's source does not record this service)" });
+        Object.assign(I18N.en, {
+            srvf_trovati: "{n} stations with {srv}", srvf_nessuno: "No station has {srv}",
+            srvf_esclusi: "{n} excluded by the services filter", srvf_almeno: "Any one is enough",
+            srvf_tutti: "Require them all", srvf_togli: "Clear services" });
         Object.assign(I18N.en, { fam_gasolio: "Diesel", fam_hvo: "HVO", fam_benzina: "Petrol", fam_gpl: "LPG", fam_metano: "CNG", fam_gnl: "LNG", fam_e85: "E85", fam_altro: "Other products" });
+        Object.assign(I18N.fr, { tag_via: "rue", tag_fermata: "arrêt", tag_stazione: "gare", tag_poi: "commerce", tag_area: "zone", rt_fine_lontana: "L'itinéraire se termine à {km} km de la destination indiquée : vérifiez d'avoir choisi le bon lieu dans les suggestions." });
+        Object.assign(I18N.fr, { pcs_carte: "cartes", pcs_migliore: "{n} de vos cartes ici : celle-ci est la moins chère" });
+        Object.assign(I18N.fr, { srvf_ignoti: "{n} sans information (la source de leur pays ne recense pas ce service)" });
+        Object.assign(I18N.fr, {
+            srvf_trovati: "{n} stations avec {srv}", srvf_nessuno: "Aucune station n'a {srv}",
+            srvf_esclusi: "{n} exclues par le filtre services", srvf_almeno: "Au moins un suffit",
+            srvf_tutti: "Les exiger toutes", srvf_togli: "Retirer les services" });
         Object.assign(I18N.fr, { fam_gasolio: "Gazole", fam_hvo: "HVO", fam_benzina: "Essence", fam_gpl: "GPL", fam_metano: "GNC", fam_gnl: "GNL", fam_e85: "E85", fam_altro: "Autres produits" });
+        Object.assign(I18N.de, { tag_via: "Straße", tag_fermata: "Haltestelle", tag_stazione: "Bahnhof", tag_poi: "Betrieb", tag_area: "Gebiet", rt_fine_lontana: "Die Route endet {km} km vom angegebenen Ziel entfernt: prüfen Sie, ob Sie den richtigen Ort gewählt haben." });
+        Object.assign(I18N.de, { pcs_carte: "Karten", pcs_migliore: "{n} Ihrer Karten hier: diese ist die günstigste" });
+        Object.assign(I18N.de, { srvf_ignoti: "{n} ohne Angabe (die Quelle ihres Landes erfasst diesen Service nicht)" });
+        Object.assign(I18N.de, {
+            srvf_trovati: "{n} Stationen mit {srv}", srvf_nessuno: "Keine Station hat {srv}",
+            srvf_esclusi: "{n} durch den Servicefilter ausgeschlossen", srvf_almeno: "Eines genügt",
+            srvf_tutti: "Alle verlangen", srvf_togli: "Services entfernen" });
         Object.assign(I18N.de, { fam_gasolio: "Diesel", fam_hvo: "HVO", fam_benzina: "Benzin", fam_gpl: "Autogas", fam_metano: "Erdgas", fam_gnl: "LNG", fam_e85: "E85", fam_altro: "Weitere Produkte" });
+        Object.assign(I18N.es, { tag_via: "calle", tag_fermata: "parada", tag_stazione: "estación", tag_poi: "negocio", tag_area: "zona", rt_fine_lontana: "La ruta termina a {km} km del destino indicado: comprueba haber elegido el lugar correcto en las sugerencias." });
+        Object.assign(I18N.es, { pcs_carte: "tarjetas", pcs_migliore: "{n} tarjetas tuyas aquí: esta es la más barata" });
+        Object.assign(I18N.es, { srvf_ignoti: "{n} sin información (la fuente de su país no registra este servicio)" });
+        Object.assign(I18N.es, {
+            srvf_trovati: "{n} estaciones con {srv}", srvf_nessuno: "Ninguna estación tiene {srv}",
+            srvf_esclusi: "{n} excluidas por el filtro de servicios", srvf_almeno: "Basta con uno",
+            srvf_tutti: "Exigirlos todos", srvf_togli: "Quitar los servicios" });
         Object.assign(I18N.es, { fam_gasolio: "Gasóleo", fam_hvo: "HVO", fam_benzina: "Gasolina", fam_gpl: "GLP", fam_metano: "GNC", fam_gnl: "GNL", fam_e85: "E85", fam_altro: "Otros productos" });
+        Object.assign(I18N.pt, { tag_via: "rua", tag_fermata: "paragem", tag_stazione: "estação", tag_poi: "negócio", tag_area: "zona", rt_fine_lontana: "O percurso termina a {km} km do destino indicado: confirma que escolheste o lugar certo nas sugestões." });
+        Object.assign(I18N.pt, { pcs_carte: "cartões", pcs_migliore: "{n} cartões teus aqui: este é o mais barato" });
+        Object.assign(I18N.pt, { srvf_ignoti: "{n} sem informação (a fonte do país não regista este serviço)" });
+        Object.assign(I18N.pt, {
+            srvf_trovati: "{n} postos com {srv}", srvf_nessuno: "Nenhum posto tem {srv}",
+            srvf_esclusi: "{n} excluídos pelo filtro de serviços", srvf_almeno: "Basta um",
+            srvf_tutti: "Exigir todos", srvf_togli: "Retirar os serviços" });
         Object.assign(I18N.pt, { fam_gasolio: "Gasóleo", fam_hvo: "HVO", fam_benzina: "Gasolina", fam_gpl: "GPL", fam_metano: "GNC", fam_gnl: "GNL", fam_e85: "E85", fam_altro: "Outros produtos" });
 
         /* Zone a prezzo fisso: intestazione e nota fuori Italia (modulo 11) */
@@ -10607,6 +12429,10 @@ body.theme-dark .leaflet-control-attribution { background: rgba(15,20,32,.82) !i
 
         function i18nExtra() {
             try { locEtichette(); } catch (e) {}
+            // il pulsante delle condizioni si ribattezza col cambio lingua:
+            // restava "€ Condizioni" dentro un'interfaccia in inglese
+            try { if (typeof locCondSync === 'function') locCondSync(); } catch (e) {}
+            try { if (typeof vistaApplica === 'function') vistaApplica(); } catch (e) {}
             try {
                 ['locChipPay', 'locChipSrv'].forEach(function (id, i) {
                     var c = document.getElementById(id);
@@ -11014,12 +12840,38 @@ body.theme-dark .leaflet-control-attribution { background: rgba(15,20,32,.82) !i
              km e' il caso normale nel trasporto internazionale; l'autocarro
              rigido sta sui 300; il furgone pesante sui 120.
         */
+        // Dieci categorie, non cinque. La scala precedente partiva da "Auto"
+        // con 55 litri di serbatoio: e' un SUV, non un'utilitaria, e chi guida
+        // una Panda si trovava un pieno da 50 litri che non gli entra nel
+        // serbatoio. Segnalato da Davide il 12/08/2026.
+        //
+        // I numeri sono di categoria, tarati sul mercato italiano: serbatoio
+        // di listino, consumo REALE (non omologato, che nessuno raggiunge) e
+        // pieno tipico, cioe' quanto si mette davvero fermandosi — non il
+        // serbatoio intero, perche' nessuno arriva alla pompa col rabbocco.
+        //
+        //   categoria            serbatoio   consumo        km/L
+        //   utilitaria              40 L      6,2 L/100      16,1
+        //   berlina                 52 L      5,4 L/100      18,5
+        //   suv                     62 L      7,4 L/100      13,5
+        //   van derivato            60 L      7,6 L/100      13,2
+        //   furgone medio           90 L     10,5 L/100       9,5
+        //   furgone grande         100 L     12,5 L/100       8,0
+        //   autocarro leggero      150 L     18,0 L/100       5,6
+        //   motrice                300 L     24,0 L/100       4,2
+        //   autoarticolato         800 L     30,0 L/100       3,3
+        //   autobus                350 L     28,0 L/100       3,6
         var MEZZI = {
-            auto:    { litri: 50,  consumo: 6,  serbatoio: 55 },
-            van:     { litri: 70,  consumo: 9,  serbatoio: 80 },
-            furgone: { litri: 100, consumo: 13, serbatoio: 120 },
-            camion:  { litri: 200, consumo: 22, serbatoio: 300 },
-            truck:   { litri: 400, consumo: 30, serbatoio: 800 },
+            utilitaria: { litri: 35,  consumo: 6.2,  serbatoio: 40 },
+            berlina:    { litri: 45,  consumo: 5.4,  serbatoio: 52 },
+            suv:        { litri: 55,  consumo: 7.4,  serbatoio: 62 },
+            van:        { litri: 50,  consumo: 7.6,  serbatoio: 60 },
+            furgone:    { litri: 75,  consumo: 10.5, serbatoio: 90 },
+            furgonone:  { litri: 85,  consumo: 12.5, serbatoio: 100 },
+            autocarro:  { litri: 120, consumo: 18,   serbatoio: 150 },
+            camion:     { litri: 250, consumo: 24,   serbatoio: 300 },
+            truck:      { litri: 400, consumo: 30,   serbatoio: 800 },
+            bus:        { litri: 280, consumo: 28,   serbatoio: 350 },
         };
 
         Object.assign(I18N.it, {
@@ -11109,6 +12961,84 @@ body.theme-dark .leaflet-control-attribution { background: rgba(15,20,32,.82) !i
                 if (el) el.addEventListener('input', _mezzoPersonalizzato);
             });
             mezzoEtichette();
+            // Questo modulo (31) gira DOPO il locator (23), che ha gia' copiato
+            // il valore nel menu della barra. Scrivere .value non emette
+            // 'change', quindi la copia restava a "Utilitaria" mentre il menu
+            // vero era su "Autoarticolato": due comandi per lo stesso dato che
+            // mostravano due mezzi diversi, e i calcoli usavano il secondo.
+            if (typeof locChipSync === 'function') locChipSync();
+        })();
+
+        /* ═════════ Consumo anche in km/L ═════════
+           Il portale chiedeva L/100km. Un autotrasportatore ragiona in km/L —
+           "faccio tre chilometri con un litro" — e convertire a mente prima di
+           usare uno strumento e' il modo migliore per sbagliare il numero e non
+           accorgersene.
+
+           I due campi sono lo STESSO dato: 100 / x. Si scrive in quello che si
+           preferisce e l'altro segue. Scrivendo a mano si passa a
+           "Personalizzato", come per gli altri campi.
+
+           I valori di categoria in km/L, per riferimento:
+             auto 16,7 · van 11,1 · furgone 7,7 · camion 4,5 · autoarticolato 3,3
+        */
+        (function () {
+            var l100 = document.getElementById('advConsumo');
+            var kml = document.getElementById('mzKmL');
+            if (!l100 || !kml) return;
+
+            function daL100() {
+                var v = parseFloat(l100.value);
+                kml.value = (v > 0) ? (100 / v).toFixed(1) : '';
+            }
+            function daKmL() {
+                var v = parseFloat(kml.value);
+                if (!(v > 0)) return;
+                l100.value = (100 / v).toFixed(1);
+                if (typeof _mezzoPersonalizzato === 'function') _mezzoPersonalizzato();
+                if (typeof renderDebounced === 'function') renderDebounced();
+            }
+            kml.addEventListener('input', daKmL);
+            l100.addEventListener('input', daL100);
+            // il campo nasce allineato, e resta allineato a ogni cambio mezzo
+            daL100();
+            var sel = document.getElementById('mezzoTipo');
+            if (sel) sel.addEventListener('change', function () { setTimeout(daL100, 0); });
+        })();
+
+        /* ═════════ I numeri dentro il menu ═════════
+           "Autoarticolato" non dice nulla: due persone intendono due mezzi
+           diversi, e chi sceglie non sa che sta accettando 800 litri e 3,3
+           km/L finche' non va a cercarli altrove. Qui la voce li porta con se':
+
+               Autoarticolato · 800 L · 3,3 km/L
+
+           Si riscrive dopo ogni cambio lingua, perche' applyLang() rimette il
+           solo nome tradotto e cancellerebbe i numeri.
+        */
+        function mezzoNumeriNelMenu() {
+            var selettori = ['mezzoTipo', 'locChipMezzo'];
+            selettori.forEach(function (id) {
+                var s = document.getElementById(id);
+                if (!s) return;
+                for (var i = 0; i < s.options.length; i++) {
+                    var o = s.options[i], m = MEZZI[o.value];
+                    if (!m) continue;                       // "Personalizzato": niente numeri
+                    var kml = (100 / m.consumo).toFixed(1).replace('.', ',');
+                    var base = o.textContent.split(' · ')[0];
+                    o.textContent = base + ' · ' + m.serbatoio + ' L · ' + kml + ' km/L';
+                }
+            });
+        }
+
+        (function () {
+            mezzoNumeriNelMenu();
+            // applyLang riscrive le voci col solo nome: i numeri vanno rimessi
+            if (typeof setLang === 'function') {
+                var _sl = setLang;
+                setLang = function (l) { _sl(l); setTimeout(mezzoNumeriNelMenu, 30); };
+                window.setLang = setLang;
+            }
         })();
         /* ═════════ 32 · FAMIGLIE DI PRODOTTO — un gasolio è un gasolio ═════════
 
@@ -11487,7 +13417,10 @@ body.theme-dark .leaflet-control-attribution { background: rgba(15,20,32,.82) !i
                     var r = condOn && typeof prezzoEffettivo === 'function'
                         ? prezzoEffettivo(d, d.fuel_rif || fuel, c, f.p) : null;
                     var p = r ? r.p : f.p;
-                    if (!best || p < best.p) best = { c: c, p: p, det: r ? r.det : '' };
+                    // stessa regola del resto del portale: a parita' vince Q8
+                    var batte = !best || (typeof cartaBatte === 'function'
+                        ? cartaBatte(p, c, best.p, best.c) : p < best.p);
+                    if (batte) best = { c: c, p: p, det: r ? r.det : '' };
                 });
                 // Quanti dei servizi richiesti ha davvero questo impianto:
                 // e' il criterio con cui si ordina quando i servizi non
