@@ -2922,7 +2922,7 @@ body.theme-dark .leaflet-control-attribution { background: rgba(15,20,32,.82) !i
                 </div>
                 <div class="kpi kpi-live">
                     <span class="kpi-label" data-i18n="kpi_sync">Dati Fuel Finder sincronizzati</span>
-                    <span class="kpi-value" style="font-size:12px;"><span class="live-dot"></span>12/08/2026 07:05 UTC</span>
+                    <span class="kpi-value" style="font-size:12px;"><span class="live-dot"></span>12/08/2026 08:53 UTC</span>
                 </div>
                 <button class="btn-pref-top" onclick="apriPreferiti()" title="I miei impianti preferiti" aria-label="Apri la lista dei preferiti">★ <span class="badge" id="prefBadge"></span></button>
                 <select id="langSel" class="lang-select" onchange="setLang(this.value)" aria-label="Lingua / Language">
@@ -9371,7 +9371,10 @@ body.theme-dark .leaflet-control-attribution { background: rgba(15,20,32,.82) !i
                     }
                     
                     rMsg += `🗺️ Naviga: ${mapLink}\n`;
-                    rMsg += `🛣️ Street View: ${streetLink}\n`;
+                    // Street View: la riga e' stata tolta insieme alla sua
+                    // variabile quando si e' accorciato il messaggio, ma questa
+                    // era rimasta indietro e alzava un ReferenceError che
+                    // spegneva l'intero pulsante "Condividi con l'autista".
                     return rMsg;
                 };
 
